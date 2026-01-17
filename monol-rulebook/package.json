@@ -1,0 +1,25 @@
+{
+  "name": "monol-rulebook",
+  "version": "0.1.0",
+  "description": "Claude Code plugin for rule management and synchronization",
+  "type": "module",
+  "main": "foundations/logic/lib/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "rulebook",
+    "code-rules"
+  ],
+  "author": "Kent",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "yaml": "^2.3.0"
+  }
+}

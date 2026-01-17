@@ -16,6 +16,7 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "prepare": "npm run build",
+    "postinstall": "./scripts/install-hooks.sh",
     "typecheck": "tsc --noEmit",
     "sync": "node dist/bin/sync.js all",
     "sync:cursor": "node dist/bin/sync.js cursor",

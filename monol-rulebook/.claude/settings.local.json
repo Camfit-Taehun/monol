@@ -14,7 +14,10 @@
       "Bash(git commit:*)",
       "Bash(npm run build:*)",
       "Bash(node dist/bin/sync.js:*)",
-      "Bash(npm link)"
+      "Bash(npm link)",
+      "Bash(chmod:*)",
+      "Bash(npm run deploy:*)",
+      "Bash(./scripts/install-hooks.sh)"
     ]
   }
 }

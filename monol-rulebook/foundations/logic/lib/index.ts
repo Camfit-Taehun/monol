@@ -45,8 +45,6 @@ export {
 export { CursorAdapter } from './adapters/cursor-adapter.js';
 export { ClaudeAdapter } from './adapters/claude-adapter.js';
 
-// Default exports
-export { default as RulebookManager } from './rulebook-manager.js';
-export { default as RuleSearch } from './rule-search.js';
-export { default as RuleVersioning } from './rule-versioning.js';
-export { default as SyncManager } from './sync-manager.js';
+// Default export (convenience)
+import RulebookManagerDefault from './rulebook-manager.js';
+export default RulebookManagerDefault;

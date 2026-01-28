@@ -1,0 +1,134 @@
+# 장기 업무 기본 규칙
+# 모든 업무는 기본적으로 장기 업무로 처리
+
+id: workflow-long-running-default
+name: 장기 업무 기본 모드
+description: |
+  모든 업무를 장기 업무(long-running task)로 처리하여
+  다각도 검토와 반복 개선을 통해 품질을 확보합니다.
+severity: error
+category: workflow
+
+triggers:
+  - event: task_start
+    condition: always
+
+rules:
+  # 기본 반복 횟수
+  iterations:
+    default: 5
+    description: "기본 5회 반복으로 점검, 보완, 강화"
+
+  # 권한 요청 정책
+  permissions:
+    strategy: upfront  # 시작 시 한 번에 모든 권한 요청
+    scope:
+      - file_read
+      - file_write
+      - file_edit
+      - bash_execute
+      - web_fetch
+      - web_search
+    description: "시작 시 전체 권한을 받고 이후 자동 수행"
+
+  # 반복 단계별 활동
+  iteration_phases:
+    - phase: 1
+      name: "초기 구현"
+      activities:
+        - 요구사항 분석
+        - 기본 구현
+        - 초기 테스트
+
+    - phase: 2
+      name: "시나리오 검토"
+      activities:
+        - 정상 케이스 검증
+        - 엣지 케이스 식별
+        - 에러 핸들링 점검
+
+    - phase: 3
+      name: "보완"
+      activities:
+        - 누락 기능 추가
+        - 코드 품질 개선
+        - 문서화
+
+    - phase: 4
+      name: "강화"
+      activities:
+        - 성능 최적화
+        - 보안 점검
+        - 사용성 개선
+
+    - phase: 5
+      name: "최종 검증"
+      activities:
+        - 전체 흐름 테스트
+        - 회귀 테스트
+        - 최종 정리
+
+  # 다각도 시나리오 검토
+  scenario_review:
+    perspectives:
+      - name: "기능성"
+        questions:
+          - "요구사항이 모두 충족되었는가?"
+          - "예외 상황이 처리되었는가?"
+
+      - name: "안정성"
+        questions:
+          - "에러가 적절히 처리되는가?"
+          - "복구 가능한가?"
+
+      - name: "성능"
+        questions:
+          - "응답 시간이 적절한가?"
+          - "리소스 사용이 효율적인가?"
+
+      - name: "보안"
+        questions:
+          - "인증/인가가 적절한가?"
+          - "민감 데이터가 보호되는가?"
+
+      - name: "유지보수성"
+        questions:
+          - "코드가 읽기 쉬운가?"
+          - "확장이 용이한가?"
+
+  # 자동 수행 조건
+  auto_execution:
+    enabled: true
+    conditions:
+      - permissions_granted: true
+      - no_blocking_questions: true
+    pause_on:
+      - critical_decision_required
+      - external_dependency_blocked
+      - user_input_required
+
+examples:
+  good:
+    - description: "기능 구현 시 5회 반복으로 품질 확보"
+      scenario: |
+        1회차: 기본 구현 완료
+        2회차: 엣지 케이스 추가
+        3회차: 에러 핸들링 보강
+        4회차: 성능 최적화
+        5회차: 문서화 및 최종 검증
+
+  bad:
+    - description: "1회 구현 후 바로 완료"
+      scenario: |
+        기본 구현만 하고 검토 없이 종료
+        → 버그 및 누락 발생 가능
+
+related:
+  - workflow-task-completion
+  - planning-scenario-based
+
+metadata:
+  author: kent
+  created: 2026-01-22
+  updated: 2026-01-22
+  version: "1.0.0"

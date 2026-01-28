@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "WebFetch(domain:localhost)",
+      "Skill(monol-logs:save)",
+      "WebFetch(domain:www.notion.so)",
+      "WebSearch"
+    ],
+    "deny": [
+      "Bash(sudo:*)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(mkfs:*)",
+      "Bash(dd if=*of=/dev/*)",
+      "Read(.env)",
+      "Read(.env.*)"
+    ],
+    "defaultMode": "acceptEdits"
+  }
+}

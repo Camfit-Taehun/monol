@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>monol-x Console</title>
+    <!-- Monol Design System -->
+    <link rel="stylesheet" href="../../../monol-design/monol-design.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              background: '#0a0a0a',
+              foreground: '#fafafa',
+              card: '#171717',
+              'card-foreground': '#fafafa',
+              primary: '#f97316',
+              'primary-foreground': '#ffffff',
+              secondary: '#262626',
+              'secondary-foreground': '#fafafa',
+              muted: '#262626',
+              'muted-foreground': '#a3a3a3',
+              border: '#262626',
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <div id="app" class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <nav class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-xl font-bold text-white">monol-x</h1>
+                <p class="text-xs text-gray-400">Console v0.8.0</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto py-4">
+                <div class="px-3 mb-2 text-xs font-semibold text-gray-500 uppercase">Main</div>
+                <a href="#" data-tab="overview" class="nav-item active">
+                    <span class="nav-icon">📊</span> Overview
+                </a>
+
+                <div class="px-3 mt-4 mb-2 text-xs font-semibold text-gray-500 uppercase">Management</div>
+                <a href="#" data-tab="modules" class="nav-item">
+                    <span class="nav-icon">🧩</span> Modules
+                </a>
+                <a href="#" data-tab="evolution" class="nav-item">
+                    <span class="nav-icon">🧬</span> Evolution
+                </a>
+                <a href="#" data-tab="lessons" class="nav-item">
+                    <span class="nav-icon">📚</span> Lessons
+                </a>
+
+                <div class="px-3 mt-4 mb-2 text-xs font-semibold text-gray-500 uppercase">History</div>
+                <a href="#" data-tab="sessions" class="nav-item">
+                    <span class="nav-icon">🕐</span> Sessions
+                </a>
+                <a href="#" data-tab="router" class="nav-item">
+                    <span class="nav-icon">🔀</span> Router
+                </a>
+
+                <div class="px-3 mt-4 mb-2 text-xs font-semibold text-gray-500 uppercase">Insights</div>
+                <a href="#" data-tab="analytics" class="nav-item">
+                    <span class="nav-icon">📈</span> Analytics
+                </a>
+                <a href="#" data-tab="lineage" class="nav-item">
+                    <span class="nav-icon">🌳</span> Lineage
+                </a>
+            </div>
+
+            <div class="p-4 border-t border-gray-700">
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <span id="health-indicator" class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span id="health-text">System Healthy</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Overview Tab -->
+            <section id="tab-overview" class="tab-content p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">System Overview</h2>
+                        <p class="text-gray-400">monol-x 전체 현황</p>
+                    </div>
+                    <button onclick="refreshAll()" class="btn-primary">🔄 Refresh</button>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Modules</div>
+                        <div class="stat-value" id="stat-modules">-</div>
+                        <div class="stat-detail" id="stat-modules-detail">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Sessions</div>
+                        <div class="stat-value" id="stat-sessions">-</div>
+                        <div class="stat-detail" id="stat-sessions-detail">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Diversity Score</div>
+                        <div class="stat-value" id="stat-diversity">-</div>
+                        <div class="stat-detail" id="stat-diversity-detail">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Lessons</div>
+                        <div class="stat-value" id="stat-lessons">-</div>
+                        <div class="stat-detail" id="stat-lessons-detail">-</div>
+                    </div>
+                </div>
+
+                <!-- Overview Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card">
+                        <h3 class="card-title">Module Scores by Role</h3>
+                        <canvas id="chart-scores-by-role"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Foundation Distribution</h3>
+                        <canvas id="chart-foundation-dist"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card">
+                        <h3 class="card-title">🏆 Top Performers</h3>
+                        <div id="top-performers" class="space-y-2"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">⚠️ At Risk</h3>
+                        <div id="at-risk" class="space-y-2"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">📈 Rising Stars</h3>
+                        <div id="rising-stars" class="space-y-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Modules Tab -->
+            <section id="tab-modules" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Modules</h2>
+                        <p class="text-gray-400">모듈 관리 및 상세 정보</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="module-role-filter" class="input-select" onchange="filterModules()">
+                            <option value="all">All Roles</option>
+                        </select>
+                        <select id="module-status-filter" class="input-select" onchange="filterModules()">
+                            <option value="all">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <button onclick="showCreateModuleModal()" class="btn-primary">+ New Module</button>
+                    </div>
+                </div>
+                <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <!-- Evolution Tab -->
+            <section id="tab-evolution" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Evolution</h2>
+                        <p class="text-gray-400">진화 관리 및 시뮬레이션</p>
+                    </div>
+                    <button onclick="showMutationModal()" class="btn-primary">🧬 Create Mutation</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="stat-card">
+                        <div class="stat-label">System Diversity</div>
+                        <div class="stat-value" id="evo-diversity">-</div>
+                        <div class="stat-detail" id="evo-diversity-status">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Generation Count</div>
+                        <div class="stat-value" id="evo-generations">-</div>
+                        <div class="stat-detail">Max depth</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Mutations Created</div>
+                        <div class="stat-value" id="evo-mutations">-</div>
+                        <div class="stat-detail">Total</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card">
+                        <h3 class="card-title">Role Diversity</h3>
+                        <canvas id="chart-role-diversity"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Score Trends (Top 5)</h3>
+                        <canvas id="chart-score-trends"></canvas>
+                    </div>
+                </div>
+
+                <div class="card mb-6">
+                    <h3 class="card-title">Evolution Boundaries</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-gray-700">
+                                    <th class="pb-2 pr-4">Module</th>
+                                    <th class="pb-2 pr-4">Role</th>
+                                    <th class="pb-2 pr-4">Score</th>
+                                    <th class="pb-2 pr-4">Floor</th>
+                                    <th class="pb-2 pr-4">Ceiling</th>
+                                    <th class="pb-2">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="boundaries-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">🔮 Evolution Simulator</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Module</label>
+                            <select id="sim-module" class="input-select w-full" onchange="loadSimModule()"></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">Scenario</label>
+                            <select id="sim-scenario" class="input-select w-full">
+                                <option value="success">10x Success (+3 avg)</option>
+                                <option value="failure">10x Failure (-5 avg)</option>
+                                <option value="mixed">10x Mixed (0 avg)</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="runSimulation()" class="btn-primary w-full">Run Simulation</button>
+                        </div>
+                    </div>
+                    <div id="sim-result" class="hidden"></div>
+                </div>
+            </section>
+
+            <!-- Lessons Tab -->
+            <section id="tab-lessons" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Lessons</h2>
+                        <p class="text-gray-400">레슨 포인트 및 인사이트</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="lesson-type-filter" class="input-select" onchange="filterLessons()">
+                            <option value="all">All Types</option>
+                            <option value="success">Success</option>
+                            <option value="failure">Failure</option>
+                            <option value="insight">Insight</option>
+                            <option value="pattern">Pattern</option>
+                            <option value="antipattern">Antipattern</option>
+                        </select>
+                        <select id="lesson-module-filter" class="input-select" onchange="filterLessons()"></select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                    <div class="stat-card stat-card-sm bg-green-900/30 cursor-pointer" onclick="filterLessonsByType('success')">
+                        <div class="stat-label">Success</div>
+                        <div class="stat-value text-green-400" id="lesson-stat-success">0</div>
+                    </div>
+                    <div class="stat-card stat-card-sm bg-red-900/30 cursor-pointer" onclick="filterLessonsByType('failure')">
+                        <div class="stat-label">Failure</div>
+                        <div class="stat-value text-red-400" id="lesson-stat-failure">0</div>
+                    </div>
+                    <div class="stat-card stat-card-sm bg-blue-900/30 cursor-pointer" onclick="filterLessonsByType('insight')">
+                        <div class="stat-label">Insight</div>
+                        <div class="stat-value text-blue-400" id="lesson-stat-insight">0</div>
+                    </div>
+                    <div class="stat-card stat-card-sm bg-purple-900/30 cursor-pointer" onclick="filterLessonsByType('pattern')">
+                        <div class="stat-label">Pattern</div>
+                        <div class="stat-value text-purple-400" id="lesson-stat-pattern">0</div>
+                    </div>
+                    <div class="stat-card stat-card-sm bg-orange-900/30 cursor-pointer" onclick="filterLessonsByType('antipattern')">
+                        <div class="stat-label">Antipattern</div>
+                        <div class="stat-value text-orange-400" id="lesson-stat-antipattern">0</div>
+                    </div>
+                </div>
+
+                <div id="lessons-list" class="space-y-3"></div>
+            </section>
+
+            <!-- Sessions Tab -->
+            <section id="tab-sessions" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Sessions</h2>
+                        <p class="text-gray-400">세션 히스토리 및 성과</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Sessions</div>
+                        <div class="stat-value" id="session-stat-total">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Avg Score</div>
+                        <div class="stat-value" id="session-stat-avg">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Commits</div>
+                        <div class="stat-value" id="session-stat-commits">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Hours</div>
+                        <div class="stat-value" id="session-stat-hours">0</div>
+                    </div>
+                </div>
+
+                <div class="card mb-6">
+                    <h3 class="card-title">Session Performance</h3>
+                    <canvas id="chart-session-performance"></canvas>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Recent Sessions</h3>
+                    <div id="sessions-list" class="space-y-3"></div>
+                </div>
+            </section>
+
+            <!-- Router Tab -->
+            <section id="tab-router" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Router</h2>
+                        <p class="text-gray-400">모듈 선택 패턴 분석</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Selections</div>
+                        <div class="stat-value" id="router-stat-total">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Unique Modules Used</div>
+                        <div class="stat-value" id="router-stat-unique">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Exploration Rate</div>
+                        <div class="stat-value" id="router-stat-explore">0%</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card">
+                        <h3 class="card-title">Selection Distribution</h3>
+                        <canvas id="chart-selection-dist"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Selection by Role</h3>
+                        <canvas id="chart-selection-role"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Selection History</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-gray-400 border-b border-gray-700">
+                                    <th class="pb-2 pr-4">Time</th>
+                                    <th class="pb-2 pr-4">Session</th>
+                                    <th class="pb-2 pr-4">Role</th>
+                                    <th class="pb-2 pr-4">Selected</th>
+                                    <th class="pb-2 pr-4">Score</th>
+                                    <th class="pb-2">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody id="router-history-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Tab -->
+            <section id="tab-analytics" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Analytics</h2>
+                        <p class="text-gray-400">생산성 분석 및 트렌드</p>
+                    </div>
+                    <select id="analytics-period" class="input-select" onchange="loadAnalytics()">
+                        <option value="7">Last 7 Days</option>
+                        <option value="30" selected>Last 30 Days</option>
+                        <option value="90">Last 90 Days</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="stat-card">
+                        <div class="stat-label">Productivity Score</div>
+                        <div class="stat-value text-green-400" id="analytics-productivity">-</div>
+                        <div class="stat-detail" id="analytics-productivity-trend">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Lines Changed</div>
+                        <div class="stat-value" id="analytics-lines">-</div>
+                        <div class="stat-detail" id="analytics-lines-detail">-</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">AI Collaboration</div>
+                        <div class="stat-value" id="analytics-ai">-</div>
+                        <div class="stat-detail">Claude Co-authored</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Peak Hours</div>
+                        <div class="stat-value" id="analytics-peak">-</div>
+                        <div class="stat-detail">Most productive</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="card">
+                        <h3 class="card-title">Activity by Hour</h3>
+                        <canvas id="chart-activity-hours"></canvas>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Weekly Trend</h3>
+                        <canvas id="chart-weekly-trend"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">💡 AI-Generated Insights</h3>
+                    <div id="analytics-insights" class="space-y-3"></div>
+                </div>
+            </section>
+
+            <!-- Lineage Tab -->
+            <section id="tab-lineage" class="tab-content hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold">Lineage</h2>
+                        <p class="text-gray-400">모듈 계보 및 진화 트리</p>
+                    </div>
+                    <select id="lineage-role-filter" class="input-select" onchange="loadLineage()">
+                        <option value="all">All Roles</option>
+                    </select>
+                </div>
+
+                <div class="card mb-6">
+                    <h3 class="card-title">Evolution Tree</h3>
+                    <div id="lineage-tree" class="min-h-[400px] overflow-auto p-4"></div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="stat-card">
+                        <div class="stat-label">Generation 1 (Base)</div>
+                        <div class="stat-value" id="lineage-gen1">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Generation 2</div>
+                        <div class="stat-value" id="lineage-gen2">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Generation 3+</div>
+                        <div class="stat-value" id="lineage-gen3">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Avg Generations</div>
+                        <div class="stat-value" id="lineage-avg">-</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Module Detail Modal -->
+    <div id="module-detail-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeModuleDetail()"></div>
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3 id="module-detail-title" class="text-xl font-bold">Module Detail</h3>
+                <button onclick="closeModuleDetail()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div id="module-detail-body" class="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Create Module Modal -->
+    <div id="create-module-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeCreateModuleModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-xl font-bold">Create New Module</h3>
+                <button onclick="closeCreateModuleModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="create-module-form" onsubmit="createModule(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">Name</label>
+                        <input type="text" id="new-module-name" class="input-text w-full" required placeholder="e.g., dev-specialized">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">Role</label>
+                        <select id="new-module-role" class="input-select w-full" required></select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">Description</label>
+                        <textarea id="new-module-desc" class="input-text w-full" rows="3" placeholder="Module description..."></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-2">Foundation Weights</label>
+                        <div id="new-module-weights" class="space-y-2"></div>
+                        <div class="text-sm text-gray-400 mt-2">Total: <span id="new-module-weights-total" class="font-semibold">0.00</span></div>
+                    </div>
+                    <button type="submit" class="btn-primary w-full">Create Module</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mutation Modal -->
+    <div id="mutation-modal" class="modal hidden">
+        <div class="modal-backdrop" onclick="closeMutationModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="text-xl font-bold">Create Mutation</h3>
+                <button onclick="closeMutationModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="mutation-form" onsubmit="createMutation(event)">
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">Parent Module</label>
+                        <select id="mutation-parent" class="input-select w-full" required onchange="loadMutationParent()"></select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">Mutation Name</label>
+                        <input type="text" id="mutation-name" class="input-text w-full" required placeholder="e.g., dev-rapid-v2">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">Mutation Type</label>
+                        <select id="mutation-type" class="input-select w-full">
+                            <option value="performance_optimized">Performance Optimized</option>
+                            <option value="quality_focused">Quality Focused</option>
+                            <option value="speed_focused">Speed Focused</option>
+                            <option value="adaptive">Adaptive</option>
+                            <option value="specialized">Specialized</option>
+                        </select>
+                    </div>
+                    <div id="mutation-weights" class="mb-4 hidden">
+                        <label class="block text-sm text-gray-400 mb-2">Adjust Weights</label>
+                        <div id="mutation-weight-sliders" class="space-y-2"></div>
+                        <div class="text-sm text-gray-400 mt-2">Total: <span id="mutation-weights-total">0.00</span></div>
+                    </div>
+                    <button type="submit" class="btn-primary w-full">Create Mutation</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

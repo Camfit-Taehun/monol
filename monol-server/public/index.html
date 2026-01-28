@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Console</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../monol-design/monol-design.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      /* Monol Design System Variable Mapping */
+      --font-family: var(--monol-font-sans);
+      --bg-primary: var(--monol-bg-base);
+      --bg-secondary: var(--monol-bg-elevated);
+      --bg-tertiary: var(--monol-bg-surface);
+      --text-primary: var(--monol-fg-base);
+      --text-secondary: var(--monol-fg-muted);
+      --text-muted: var(--monol-fg-subtle);
+      --border-color: var(--monol-border-base);
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-orange: var(--monol-primary);
+    }
+  </style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sidebar-header span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .nav-menu {
+      list-style: none;
+      padding: 12px 0;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .nav-section {
+      padding: 16px 20px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-item a:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .nav-item a.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    .nav-icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+
+    .sidebar-footer button {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sidebar-footer button:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* View Container */
+    .view-container {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .view {
+      display: none;
+      height: 100%;
+    }
+
+    .view.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Overview Grid */
+    .overview-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .demo-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+
+    .demo-section h2 {
+      font-size: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-section h2 span {
+      font-size: 20px;
+    }
+
+    /* Integration Log */
+    .integration-log {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      max-height: 250px;
+      overflow-y: auto;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .log-time { color: var(--text-muted); }
+    .log-source { color: var(--accent-cyan); }
+    .log-event { color: var(--accent-green); }
+
+    /* Sub Tabs */
+    .sub-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      overflow-x: auto;
+    }
+
+    .sub-tab {
+      padding: 8px 16px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .sub-tab:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    .sub-tab.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    /* Plugin Content */
+    .plugin-content {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .subtab-container {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .subtab-content {
+      display: none;
+      padding: 24px;
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    .subtab-content.active {
+      display: block;
+    }
+
+    /* Coming Soon */
+    .coming-soon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .coming-soon-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .coming-soon-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .coming-soon-desc {
+      font-size: 14px;
+    }
+
+    /* Loading State */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .demo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        left: -240px;
+        height: 100vh;
+        z-index: 100;
+        transition: left 0.3s;
+      }
+
+      .sidebar.open {
+        left: 0;
+      }
+
+      .main-content {
+        width: 100%;
+      }
+
+      .sub-tabs {
+        padding: 8px 16px;
+      }
+
+      .sub-tab {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h1>Monol Console</h1>
+      <span>Integrated Plugin Hub</span>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-section">Overview</li>
+      <li class="nav-item">
+        <a href="#" class="active" data-view="overview">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+      </li>
+
+      <li class="nav-section">Plugins</li>
+      <li class="nav-item">
+        <a href="#" data-view="scout">
+          <span class="nav-icon">🔍</span>
+          <span>Plugin Scout</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" data-view="channels">
+          <span class="nav-icon">📡</span>
+          <span>Channels</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" data-view="monol-x">
+          <span class="nav-icon">🎮</span>
+          <span>Monol X</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" data-view="logs">
+          <span class="nav-icon">📝</span>
+          <span>Logs</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#" data-view="rulebook">
+          <span class="nav-icon">📖</span>
+          <span>Rulebook</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button onclick="toggleTheme()">🌓 Theme</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="view-container">
+      <!-- Overview View -->
+      <div class="view active" id="view-overview">
+        <div class="overview-content">
+          <div class="page-header">
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-subtitle">Cross-plugin integration overview</p>
+          </div>
+
+          <div class="demo-grid">
+            <!-- Scout Section -->
+            <div class="demo-section">
+              <h2><span>🔍</span> Plugin Scout</h2>
+              <div id="overview-scout-container">
+                <div class="loading-container">
+                  <div class="spinner"></div>
+                  <span>Loading...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Channels Section -->
+            <div class="demo-section">
+              <h2><span>📡</span> Channels - Flow</h2>
+              <div id="overview-channels-container">
+                <div class="loading-container">
+                  <div class="spinner"></div>
+                  <span>Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="demo-grid">
+            <!-- Monol X Section -->
+            <div class="demo-section">
+              <h2><span>🎮</span> Monol X - Modules</h2>
+              <div id="overview-x-container">
+                <div class="loading-container">
+                  <div class="spinner"></div>
+                  <span>Loading...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Integration Log -->
+            <div class="demo-section">
+              <h2><span>📋</span> Integration Log</h2>
+              <div id="integration-log" class="integration-log">
+                <div class="log-entry">
+                  <span class="log-time">[시작]</span> 컴포넌트 로딩 중...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scout View -->
+      <div class="view" id="view-scout">
+        <div class="plugin-content">
+          <div class="sub-tabs">
+            <button class="sub-tab active" data-subtab="overview">📊 Overview</button>
+            <button class="sub-tab" data-subtab="plugins">🔌 Plugins</button>
+            <button class="sub-tab" data-subtab="team">👥 Team</button>
+            <button class="sub-tab" data-subtab="marketplace">🏪 Marketplace</button>
+            <button class="sub-tab" data-subtab="insights">💡 Insights</button>
+          </div>
+          <div class="subtab-container">
+            <div class="subtab-content active" id="scout-overview">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Scout Overview...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="scout-plugins">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Plugins...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="scout-team">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Team...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="scout-marketplace">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">🏪</div>
+                <div class="coming-soon-title">Marketplace</div>
+                <div class="coming-soon-desc">Plugin marketplace coming soon</div>
+              </div>
+            </div>
+            <div class="subtab-content" id="scout-insights">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Insights...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels View -->
+      <div class="view" id="view-channels">
+        <div class="plugin-content">
+          <div class="sub-tabs">
+            <button class="sub-tab active" data-subtab="overview">📊 Overview</button>
+            <button class="sub-tab" data-subtab="flow">🔄 Channel Flow</button>
+            <button class="sub-tab" data-subtab="sessions">📋 Sessions</button>
+            <button class="sub-tab" data-subtab="decisions">🎯 Decisions</button>
+            <button class="sub-tab" data-subtab="search">🔍 Search</button>
+          </div>
+          <div class="subtab-container">
+            <div class="subtab-content active" id="channels-overview">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Channels Overview...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="channels-flow">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Channel Flow...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="channels-sessions">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Sessions...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="channels-decisions">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Decisions...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="channels-search">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">🔍</div>
+                <div class="coming-soon-title">Search</div>
+                <div class="coming-soon-desc">Search functionality coming soon</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monol X View -->
+      <div class="view" id="view-monol-x">
+        <div class="plugin-content">
+          <div class="sub-tabs">
+            <button class="sub-tab active" data-subtab="overview">📊 Overview</button>
+            <button class="sub-tab" data-subtab="modules">🧩 Modules</button>
+            <button class="sub-tab" data-subtab="evolution">🧬 Evolution</button>
+            <button class="sub-tab" data-subtab="lessons">📚 Lessons</button>
+            <button class="sub-tab" data-subtab="sessions">🕐 Sessions</button>
+            <button class="sub-tab" data-subtab="router">🔀 Router</button>
+            <button class="sub-tab" data-subtab="analytics">📈 Analytics</button>
+            <button class="sub-tab" data-subtab="lineage">🌳 Lineage</button>
+          </div>
+          <div class="subtab-container">
+            <div class="subtab-content active" id="x-overview">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Monol X Overview...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-modules">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Modules...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-evolution">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Evolution...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-lessons">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Lessons...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-sessions">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">🕐</div>
+                <div class="coming-soon-title">Sessions</div>
+                <div class="coming-soon-desc">Session history coming soon</div>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-router">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">🔀</div>
+                <div class="coming-soon-title">Router</div>
+                <div class="coming-soon-desc">Router analytics coming soon</div>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-analytics">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">📈</div>
+                <div class="coming-soon-title">Analytics</div>
+                <div class="coming-soon-desc">Productivity analytics coming soon</div>
+              </div>
+            </div>
+            <div class="subtab-content" id="x-lineage">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">🌳</div>
+                <div class="coming-soon-title">Lineage</div>
+                <div class="coming-soon-desc">Module lineage coming soon</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs View -->
+      <div class="view" id="view-logs">
+        <div class="plugin-content">
+          <div class="sub-tabs">
+            <button class="sub-tab active" data-subtab="overview">📊 Overview</button>
+            <button class="sub-tab" data-subtab="sessions">📋 Sessions</button>
+            <button class="sub-tab" data-subtab="timeline">🕐 Timeline</button>
+            <button class="sub-tab" data-subtab="insights">💡 Insights</button>
+          </div>
+          <div class="subtab-container">
+            <div class="subtab-content active" id="logs-overview">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Logs Overview...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="logs-sessions">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Sessions...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="logs-timeline">
+              <div class="loading-container">
+                <div class="spinner"></div>
+                <span>Loading Timeline...</span>
+              </div>
+            </div>
+            <div class="subtab-content" id="logs-insights">
+              <div class="coming-soon">
+                <div class="coming-soon-icon">💡</div>
+                <div class="coming-soon-title">AI Insights</div>
+                <div class="coming-soon-desc">Session insights coming soon</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rulebook View -->
+      <div class="view" id="view-rulebook">
+        <div class="overview-content">
+          <div class="page-header">
+            <h1 class="page-title">📖 Rulebook</h1>
+            <p class="page-subtitle">Project rules and conventions</p>
+          </div>
+          <div class="demo-section">
+            <div class="coming-soon">
+              <div class="coming-soon-icon">🔧</div>
+              <div class="coming-soon-title">Coming Soon</div>
+              <div class="coming-soon-desc">Rulebook console is under development</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { MonolComponent, EventBus } from '/design-system/component-base.js';
+
+    // ============================================
+    // State
+    // ============================================
+    const state = {
+      currentView: 'overview',
+      overviewLoaded: false,
+      loadedSubtabs: {},
+      components: {}
+    };
+
+    // ============================================
+    // Log Function
+    // ============================================
+    function log(source, event, data = '') {
+      const logEl = document.getElementById('integration-log');
+      if (!logEl) return;
+
+      const time = new Date().toLocaleTimeString('ko-KR');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-source">${source}</span> → <span class="log-event">${event}</span> ${data}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // ============================================
+    // WebSocket Client (플러그인 업데이트 알림)
+    // ============================================
+    const ws = {
+      connection: null,
+      reconnectAttempts: 0,
+      maxReconnectAttempts: 5,
+
+      connect() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws`;
+
+        this.connection = new WebSocket(wsUrl);
+
+        this.connection.onopen = () => {
+          log('WebSocket', 'Connected');
+          this.reconnectAttempts = 0;
+        };
+
+        this.connection.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            this.handleMessage(data);
+          } catch (e) {
+            console.error('WebSocket parse error:', e);
+          }
+        };
+
+        this.connection.onclose = () => {
+          log('WebSocket', 'Disconnected');
+          this.scheduleReconnect();
+        };
+
+        this.connection.onerror = (err) => {
+          console.error('WebSocket error:', err);
+        };
+      },
+
+      scheduleReconnect() {
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+          this.reconnectAttempts++;
+          const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+          log('WebSocket', 'Reconnecting', `in ${delay/1000}s (attempt ${this.reconnectAttempts})`);
+          setTimeout(() => this.connect(), delay);
+        }
+      },
+
+      handleMessage(data) {
+        const { event, data: payload } = data;
+
+        switch (event) {
+          case 'connected':
+            log('WebSocket', 'Ready');
+            break;
+
+          case 'plugin-updated':
+            log('WebSocket', 'Plugin Updated', payload.pluginId);
+            showToast(`${payload.pluginId} 플러그인이 업데이트되었습니다`, 'success');
+
+            // 해당 플러그인 컴포넌트 리로드
+            reloadPluginComponents(payload.pluginId);
+            break;
+
+          case 'plugin-update-failed':
+            log('WebSocket', 'Update Failed', payload.pluginId);
+            showToast(`${payload.pluginId} 업데이트 실패: ${payload.error}`, 'error');
+            break;
+
+          default:
+            log('WebSocket', event, JSON.stringify(payload));
+        }
+      }
+    };
+
+    // 토스트 알림
+    function showToast(message, type = 'info') {
+      let toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.cssText = 'position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:8px;';
+        document.body.appendChild(toastContainer);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.style.cssText = `
+        padding: 12px 16px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        border-radius: 8px;
+        font-size: 13px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+        cursor: pointer;
+      `;
+      toast.textContent = message;
+      toast.onclick = () => toast.remove();
+
+      toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    // 플러그인 컴포넌트 리로드
+    async function reloadPluginComponents(pluginId) {
+      // 해당 플러그인의 로드된 subtab 캐시 무효화
+      const keysToDelete = Object.keys(state.loadedSubtabs).filter(k => k.startsWith(pluginId));
+      keysToDelete.forEach(k => delete state.loadedSubtabs[k]);
+
+      // 현재 보고 있는 뷰가 해당 플러그인이면 리로드
+      if (state.currentView === pluginId) {
+        const activeSubtab = document.querySelector(`#view-${pluginId} .sub-tab.active`);
+        if (activeSubtab) {
+          const subtabName = activeSubtab.dataset.subtab;
+          await loadSubtab(pluginId, subtabName, true);
+          log('Reload', pluginId, subtabName);
+        }
+      }
+    }
+
+    // WebSocket 연결 시작
+    ws.connect();
+
+    // ============================================
+    // Subtab Loaders
+    // ============================================
+    const subtabLoaders = {
+      scout: {
+        overview: async (container) => {
+          try {
+            const { ScoutOverview } = await import('/api/plugins/scout/components/overview.js');
+            const comp = new ScoutOverview(container);
+            await comp.init();
+            state.components['scout-overview'] = comp;
+            log('Scout', 'Loaded', 'Overview component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ScoutOverview:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Scout Overview</div></div>';
+          }
+        },
+        plugins: async (container) => {
+          try {
+            const { ScoutPluginList } = await import('/api/plugins/scout/components/plugin-list.js');
+            const comp = new ScoutPluginList(container, {
+              plugins: [
+                { id: 'channels', name: 'Monol Channels', icon: '📡', version: '1.0.0', status: 'active', score: 92 },
+                { id: 'x', name: 'Monol X', icon: '🎮', version: '2.0.0', status: 'active', score: 88 },
+                { id: 'logs', name: 'Monol Logs', icon: '📝', version: '1.2.0', status: 'active', score: 85 },
+                { id: 'rulebook', name: 'Rulebook', icon: '📖', version: '1.0.0', status: 'inactive', score: 78 }
+              ]
+            });
+            await comp.init();
+            state.components['scout-plugins'] = comp;
+            log('Scout', 'Loaded', 'Plugin List component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ScoutPluginList:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Plugin List</div></div>';
+          }
+        },
+        team: async (container) => {
+          try {
+            const { ScoutTeamList } = await import('/api/plugins/scout/components/team-list.js');
+            const comp = new ScoutTeamList(container);
+            await comp.init();
+            state.components['scout-team'] = comp;
+            log('Scout', 'Loaded', 'Team List component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ScoutTeamList:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Team List</div></div>';
+          }
+        },
+        insights: async (container) => {
+          try {
+            const { ScoutInsightCard } = await import('/api/plugins/scout/components/insight-card.js');
+            const comp = new ScoutInsightCard(container);
+            await comp.init();
+            state.components['scout-insights'] = comp;
+            log('Scout', 'Loaded', 'Insight Card component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ScoutInsightCard:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Insights</div></div>';
+          }
+        }
+      },
+      channels: {
+        overview: async (container) => {
+          // Inline implementation: Stats cards
+          container.innerHTML = `
+            <div class="page-header">
+              <h1 class="page-title">Channels Overview</h1>
+              <p class="page-subtitle">Communication analytics</p>
+            </div>
+            <div class="demo-grid">
+              <div class="demo-section">
+                <h2><span>📬</span> Messages</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-cyan)">1,234</div>
+                <div style="font-size:12px;color:var(--text-muted)">+12% from yesterday</div>
+              </div>
+              <div class="demo-section">
+                <h2><span>💬</span> Discussions</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-green)">89</div>
+                <div style="font-size:12px;color:var(--text-muted)">Active threads</div>
+              </div>
+            </div>
+            <div class="demo-grid">
+              <div class="demo-section">
+                <h2><span>🎯</span> Decisions</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-purple)">23</div>
+                <div style="font-size:12px;color:var(--text-muted)">This week</div>
+              </div>
+              <div class="demo-section">
+                <h2><span>📢</span> Active Channels</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-orange)">7</div>
+                <div style="font-size:12px;color:var(--text-muted)">Of 12 total</div>
+              </div>
+            </div>
+          `;
+          log('Channels', 'Loaded', 'Overview stats');
+        },
+        flow: async (container) => {
+          try {
+            const { ChannelFlow } = await import('/api/plugins/channels/components/channel-flow.js');
+            const comp = new ChannelFlow(container, {
+              channels: [
+                { id: 'input', name: 'Input', icon: '📥', status: 'active' },
+                { id: 'process', name: 'Process', icon: '⚙️', status: 'active' },
+                { id: 'output', name: 'Output', icon: '📤', status: 'active' }
+              ]
+            });
+            await comp.init();
+            state.components['channels-flow'] = comp;
+            log('Channels', 'Loaded', 'Channel Flow component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ChannelFlow:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Channel Flow</div></div>';
+          }
+        },
+        sessions: async (container) => {
+          try {
+            const { ChannelsSessionList } = await import('/api/plugins/channels/components/session-list.js');
+            const comp = new ChannelsSessionList(container);
+            await comp.init();
+            state.components['channels-sessions'] = comp;
+            log('Channels', 'Loaded', 'Session List component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ChannelsSessionList:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Sessions</div></div>';
+          }
+        },
+        decisions: async (container) => {
+          try {
+            const { ChannelsDecisionList } = await import('/api/plugins/channels/components/decision-list.js');
+            const comp = new ChannelsDecisionList(container);
+            await comp.init();
+            state.components['channels-decisions'] = comp;
+            log('Channels', 'Loaded', 'Decision List component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ChannelsDecisionList:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Decisions</div></div>';
+          }
+        }
+      },
+      'monol-x': {
+        overview: async (container) => {
+          // Inline implementation: Stats cards
+          container.innerHTML = `
+            <div class="page-header">
+              <h1 class="page-title">Monol X Overview</h1>
+              <p class="page-subtitle">Evolution system status</p>
+            </div>
+            <div class="demo-grid">
+              <div class="demo-section">
+                <h2><span>🧩</span> Total Modules</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-cyan)">24</div>
+                <div style="font-size:12px;color:var(--text-muted)">18 active, 6 inactive</div>
+              </div>
+              <div class="demo-section">
+                <h2><span>🕐</span> Total Sessions</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-green)">156</div>
+                <div style="font-size:12px;color:var(--text-muted)">Last 30 days</div>
+              </div>
+            </div>
+            <div class="demo-grid">
+              <div class="demo-section">
+                <h2><span>🎯</span> Diversity Score</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-purple)">0.78</div>
+                <div style="font-size:12px;color:var(--text-muted)">Healthy diversity</div>
+              </div>
+              <div class="demo-section">
+                <h2><span>📚</span> Total Lessons</h2>
+                <div style="font-size:32px;font-weight:700;color:var(--accent-orange)">342</div>
+                <div style="font-size:12px;color:var(--text-muted)">+15 this week</div>
+              </div>
+            </div>
+          `;
+          log('Monol X', 'Loaded', 'Overview stats');
+        },
+        modules: async (container) => {
+          try {
+            const { ModuleCard } = await import('/api/plugins/x/components/module-card.js');
+            const comp = new ModuleCard(container, {
+              modules: [
+                { id: 'intro', name: 'Introduction', icon: '📚', lessons: 5, progress: 100 },
+                { id: 'basics', name: 'Basic Concepts', icon: '🎯', lessons: 8, progress: 75 },
+                { id: 'advanced', name: 'Advanced Topics', icon: '🚀', lessons: 12, progress: 30 },
+                { id: 'expert', name: 'Expert Level', icon: '💎', lessons: 15, progress: 10 }
+              ]
+            });
+            await comp.init();
+            state.components['x-modules'] = comp;
+            log('Monol X', 'Loaded', 'Module Card component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load ModuleCard:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Module Cards</div></div>';
+          }
+        },
+        evolution: async (container) => {
+          try {
+            const { XEvolutionChart } = await import('/api/plugins/x/components/evolution-chart.js');
+            const comp = new XEvolutionChart(container);
+            await comp.init();
+            state.components['x-evolution'] = comp;
+            log('Monol X', 'Loaded', 'Evolution Chart component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load XEvolutionChart:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Evolution Chart</div></div>';
+          }
+        },
+        lessons: async (container) => {
+          try {
+            const { XLessonList } = await import('/api/plugins/x/components/lesson-list.js');
+            const comp = new XLessonList(container);
+            await comp.init();
+            state.components['x-lessons'] = comp;
+            log('Monol X', 'Loaded', 'Lesson List component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load XLessonList:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Lessons</div></div>';
+          }
+        }
+      },
+      logs: {
+        overview: async (container) => {
+          try {
+            const { LogsOverview } = await import('/api/plugins/logs/components/overview.js');
+            const comp = new LogsOverview(container);
+            await comp.init();
+            state.components['logs-overview'] = comp;
+            log('Logs', 'Loaded', 'Overview component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load LogsOverview:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Logs Overview</div></div>';
+          }
+        },
+        sessions: async (container) => {
+          try {
+            const { LogsSessionList } = await import('/api/plugins/logs/components/session-list.js');
+            const comp = new LogsSessionList(container);
+            await comp.init();
+            state.components['logs-sessions'] = comp;
+            log('Logs', 'Loaded', 'Session List component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load LogsSessionList:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Sessions</div></div>';
+          }
+        },
+        timeline: async (container) => {
+          try {
+            const { LogsTimeline } = await import('/api/plugins/logs/components/timeline.js');
+            const comp = new LogsTimeline(container);
+            await comp.init();
+            state.components['logs-timeline'] = comp;
+            log('Logs', 'Loaded', 'Timeline component');
+            return comp;
+          } catch (e) {
+            console.error('Failed to load LogsTimeline:', e);
+            container.innerHTML = '<div class="coming-soon"><div class="coming-soon-icon">⚠️</div><div class="coming-soon-title">Load Error</div><div class="coming-soon-desc">Failed to load Timeline</div></div>';
+          }
+        }
+      }
+    };
+
+    // ============================================
+    // Navigation
+    // ============================================
+    function setupNavigation() {
+      document.querySelectorAll('.nav-item a').forEach(link => {
+        link.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const view = link.dataset.view;
+
+          document.querySelectorAll('.nav-item a').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+
+          await switchView(view);
+        });
+      });
+    }
+
+    async function switchView(viewName) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+
+      const viewEl = document.getElementById(`view-${viewName}`);
+      if (viewEl) {
+        viewEl.classList.add('active');
+      }
+
+      state.currentView = viewName;
+      log('Navigation', `Switched to ${viewName}`);
+
+      // Load first subtab if plugin view
+      if (['scout', 'channels', 'monol-x', 'logs'].includes(viewName)) {
+        const firstSubtab = viewEl.querySelector('.sub-tab.active');
+        if (firstSubtab) {
+          const subtabName = firstSubtab.dataset.subtab;
+          await loadSubtab(viewName, subtabName);
+        }
+      }
+    }
+
+    // ============================================
+    // Subtab Navigation
+    // ============================================
+    function setupSubtabs() {
+      document.querySelectorAll('.sub-tabs').forEach(tabBar => {
+        tabBar.addEventListener('click', async (e) => {
+          const tab = e.target.closest('.sub-tab');
+          if (!tab) return;
+
+          const subtab = tab.dataset.subtab;
+          const view = tabBar.closest('.view');
+          const plugin = view.id.replace('view-', '');
+
+          // Toggle tab active state
+          tabBar.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+
+          // Toggle content
+          const container = view.querySelector('.subtab-container');
+          container.querySelectorAll('.subtab-content').forEach(c => c.classList.remove('active'));
+
+          const targetId = `${plugin}-${subtab}`;
+          const targetContent = document.getElementById(targetId);
+          if (targetContent) {
+            targetContent.classList.add('active');
+          }
+
+          // Lazy load
+          await loadSubtab(plugin, subtab);
+        });
+      });
+    }
+
+    async function loadSubtab(plugin, subtab, forceReload = false) {
+      const key = `${plugin}-${subtab}`;
+
+      // Already loaded (skip if force reload)
+      if (state.loadedSubtabs[key] && !forceReload) {
+        return;
+      }
+
+      const loader = subtabLoaders[plugin]?.[subtab];
+      if (loader) {
+        const container = document.getElementById(key);
+        if (container) {
+          // 강제 리로드 시 컨테이너 초기화
+          if (forceReload) {
+            container.innerHTML = '<div class="loading-container"><div class="spinner"></div><span>Reloading...</span></div>';
+          }
+          await loader(container);
+          state.loadedSubtabs[key] = true;
+        }
+      }
+    }
+
+    // ============================================
+    // Overview Components
+    // ============================================
+    async function loadOverviewComponents() {
+      if (state.overviewLoaded) return;
+
+      try {
+        // Scout Plugin List
+        const { ScoutPluginList } = await import('/api/plugins/scout/components/plugin-list.js');
+        const scoutList = new ScoutPluginList('#overview-scout-container', {
+          plugins: [
+            { id: 'channels', name: 'Monol Channels', icon: '📡', version: '1.0.0', status: 'active', score: 92 },
+            { id: 'x', name: 'Monol X', icon: '🎮', version: '2.0.0', status: 'active', score: 88 },
+            { id: 'logs', name: 'Monol Logs', icon: '📝', version: '1.2.0', status: 'active', score: 85 },
+            { id: 'rulebook', name: 'Rulebook', icon: '📖', version: '1.0.0', status: 'inactive', score: 78 }
+          ]
+        });
+        await scoutList.init();
+        state.components.overviewScoutList = scoutList;
+        log('Scout', 'Loaded', 'Plugin List (Overview)');
+
+        // Channels Flow
+        const { ChannelFlow } = await import('/api/plugins/channels/components/channel-flow.js');
+        const channelFlow = new ChannelFlow('#overview-channels-container', {
+          channels: [
+            { id: 'input', name: 'Input', icon: '📥', status: 'active' },
+            { id: 'process', name: 'Process', icon: '⚙️', status: 'active' },
+            { id: 'output', name: 'Output', icon: '📤', status: 'active' }
+          ]
+        });
+        await channelFlow.init();
+        state.components.overviewChannelFlow = channelFlow;
+        log('Channels', 'Loaded', 'Channel Flow (Overview)');
+
+        // Monol X Module Card
+        const { ModuleCard } = await import('/api/plugins/x/components/module-card.js');
+        const moduleCard = new ModuleCard('#overview-x-container', {
+          modules: [
+            { id: 'intro', name: 'Introduction', icon: '📚', lessons: 5, progress: 100 },
+            { id: 'basics', name: 'Basic Concepts', icon: '🎯', lessons: 8, progress: 75 },
+            { id: 'advanced', name: 'Advanced Topics', icon: '🚀', lessons: 12, progress: 30 }
+          ]
+        });
+        await moduleCard.init();
+        state.components.overviewModuleCard = moduleCard;
+        log('Monol X', 'Loaded', 'Module Card (Overview)');
+
+        // Cross-plugin events
+        scoutList.on('plugin-select', (plugin) => {
+          log('Scout', 'plugin-select', plugin.name);
+
+          if (plugin.id === 'channels') {
+            channelFlow.highlight(['input', 'process', 'output']);
+          } else {
+            channelFlow.highlight([]);
+          }
+
+          if (plugin.id === 'x') {
+            moduleCard.highlightModules(['intro', 'basics', 'advanced']);
+          } else {
+            moduleCard.highlightModules([]);
+          }
+
+          EventBus.emit('plugin-selected', plugin, 'scout');
+        });
+
+        channelFlow.on('channel-select', (channel) => {
+          log('Channels', 'channel-select', channel.name);
+          EventBus.emit('channel-selected', channel, 'channels');
+        });
+
+        moduleCard.on('module-select', (module) => {
+          log('Monol X', 'module-select', module.name);
+          EventBus.emit('module-selected', module, 'x');
+        });
+
+        log('System', 'Ready', 'All overview components loaded');
+        state.overviewLoaded = true;
+
+      } catch (error) {
+        log('Error', 'Failed', error.message);
+        console.error(error);
+      }
+    }
+
+    // ============================================
+    // Theme Toggle
+    // ============================================
+    window.toggleTheme = function() {
+      document.body.classList.toggle('light-theme');
+      const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+      log('Theme', `Changed to ${theme}`);
+    };
+
+    // ============================================
+    // Init
+    // ============================================
+    async function init() {
+      log('System', 'Initializing', 'Monol Console');
+
+      setupNavigation();
+      setupSubtabs();
+
+      await loadOverviewComponents();
+    }
+
+    init();
+  </script>
+</body>
+</html>

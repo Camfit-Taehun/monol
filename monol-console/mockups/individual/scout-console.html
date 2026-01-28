@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plugin Scout Console - Mockup</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --accent-green: #22c55e;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-orange: #f97316;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .logo h1 { font-size: 20px; background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 24px;
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: 8px;
+      width: fit-content;
+    }
+    .tab {
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tab.active { background: var(--bg-tertiary); color: var(--text-primary); }
+    .content-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 24px;
+    }
+    .sidebar {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+      height: fit-content;
+    }
+    .sidebar h3 { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+    .category-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: background 0.2s;
+    }
+    .category-item:hover { background: var(--bg-tertiary); }
+    .category-item.active { background: var(--accent-cyan); color: #000; }
+    .category-icon { font-size: 16px; }
+    .category-count { margin-left: auto; font-size: 12px; background: var(--bg-tertiary); padding: 2px 8px; border-radius: 10px; }
+    .main-content { display: flex; flex-direction: column; gap: 16px; }
+    .plugin-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+    .plugin-card:hover { border-color: var(--accent-cyan); }
+    .plugin-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .plugin-info { flex: 1; }
+    .plugin-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .plugin-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+    .plugin-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+    .plugin-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-primary { background: var(--accent-cyan); color: #000; border-color: var(--accent-cyan); }
+    .score-badge {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .score-high { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
+    .score-mid { background: rgba(6, 182, 212, 0.2); color: var(--accent-cyan); }
+    .mockup-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🔍</div>
+        <div>
+          <h1>Plugin Scout</h1>
+          <span style="font-size: 11px; color: var(--text-secondary);">v2.0.0</span>
+        </div>
+      </div>
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Search plugins... (Ctrl+K)">
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn">⚙️ Settings</button>
+        <button class="btn btn-primary">+ Install</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active">🏠 All Plugins</button>
+      <button class="tab">📦 Installed</button>
+      <button class="tab">⭐ Recommended</button>
+      <button class="tab">🔄 Updates</button>
+    </div>
+
+    <div class="content-grid">
+      <aside class="sidebar">
+        <h3>CATEGORIES</h3>
+        <div class="category-item active">
+          <span class="category-icon">📁</span>
+          <span>All</span>
+          <span class="category-count">47</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">🤖</span>
+          <span>AI/ML</span>
+          <span class="category-count">12</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">🔧</span>
+          <span>DevOps</span>
+          <span class="category-count">8</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">📝</span>
+          <span>Documentation</span>
+          <span class="category-count">6</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">🧪</span>
+          <span>Testing</span>
+          <span class="category-count">9</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">🔒</span>
+          <span>Security</span>
+          <span class="category-count">5</span>
+        </div>
+        <div class="category-item">
+          <span class="category-icon">🎨</span>
+          <span>UI/UX</span>
+          <span class="category-count">7</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <div class="plugin-card">
+          <div class="plugin-icon">📡</div>
+          <div class="plugin-info">
+            <div class="plugin-name">Monol Channels</div>
+            <div class="plugin-desc">AI 에이전트 간 구조화된 커뮤니케이션 채널</div>
+            <div class="plugin-meta">
+              <span>📦 v1.2.0</span>
+              <span>⬇️ 2.3k installs</span>
+              <span>⭐ 4.9</span>
+            </div>
+          </div>
+          <span class="score-badge score-high">95</span>
+          <div class="plugin-actions">
+            <button class="btn">Details</button>
+            <button class="btn btn-primary">Installed ✓</button>
+          </div>
+        </div>
+
+        <div class="plugin-card">
+          <div class="plugin-icon">🎮</div>
+          <div class="plugin-info">
+            <div class="plugin-name">Monol X</div>
+            <div class="plugin-desc">AI 성격 모듈 및 진화 추적 시스템</div>
+            <div class="plugin-meta">
+              <span>📦 v2.1.0</span>
+              <span>⬇️ 1.8k installs</span>
+              <span>⭐ 4.8</span>
+            </div>
+          </div>
+          <span class="score-badge score-high">92</span>
+          <div class="plugin-actions">
+            <button class="btn">Details</button>
+            <button class="btn btn-primary">Installed ✓</button>
+          </div>
+        </div>
+
+        <div class="plugin-card">
+          <div class="plugin-icon">📝</div>
+          <div class="plugin-info">
+            <div class="plugin-name">Monol Logs</div>
+            <div class="plugin-desc">세션 로깅 및 히스토리 관리</div>
+            <div class="plugin-meta">
+              <span>📦 v1.0.0</span>
+              <span>⬇️ 1.2k installs</span>
+              <span>⭐ 4.6</span>
+            </div>
+          </div>
+          <span class="score-badge score-mid">88</span>
+          <div class="plugin-actions">
+            <button class="btn">Details</button>
+            <button class="btn btn-primary">Installed ✓</button>
+          </div>
+        </div>
+
+        <div class="plugin-card">
+          <div class="plugin-icon">📖</div>
+          <div class="plugin-info">
+            <div class="plugin-name">Rulebook</div>
+            <div class="plugin-desc">코딩 규칙 관리 및 플랫폼 동기화</div>
+            <div class="plugin-meta">
+              <span>📦 v1.5.0</span>
+              <span>⬇️ 890 installs</span>
+              <span>⭐ 4.5</span>
+            </div>
+          </div>
+          <span class="score-badge score-mid">85</span>
+          <div class="plugin-actions">
+            <button class="btn">Details</button>
+            <button class="btn">Install</button>
+          </div>
+        </div>
+
+        <div class="plugin-card">
+          <div class="plugin-icon">🧪</div>
+          <div class="plugin-info">
+            <div class="plugin-name">Test Runner Pro</div>
+            <div class="plugin-desc">통합 테스트 실행 및 커버리지 리포트</div>
+            <div class="plugin-meta">
+              <span>📦 v3.2.1</span>
+              <span>⬇️ 5.6k installs</span>
+              <span>⭐ 4.7</span>
+            </div>
+          </div>
+          <span class="score-badge score-mid">82</span>
+          <div class="plugin-actions">
+            <button class="btn">Details</button>
+            <button class="btn">Install</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <div class="mockup-badge">🎨 MOCKUP</div>
+</body>
+</html>

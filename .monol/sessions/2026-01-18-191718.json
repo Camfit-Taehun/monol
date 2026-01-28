@@ -1,0 +1,37 @@
+{
+  "id": "2026-01-18-191718",
+  "started": "2026-01-18T19:17:18+09:00",
+  "ended": null,
+  "status": "active",
+  "branch": "master",
+  "worktree": "/Users/kent/Work/monol",
+  "focus": "테스트 작업",
+  "template": "general",
+  "logs": [],
+  "commits": [],
+  "stats": {
+    "commands": 0,
+    "files_changed": 0,
+    "lines_added": 0,
+    "lines_removed": 0
+  },
+  "pipeline": {
+    "current_step": 0,
+    "total_steps": 1,
+    "strategy": "exploration_bonus",
+    "steps": [
+      {
+        "name": "execution",
+        "role": "developer",
+        "weight": 1,
+        "timeout": "30m",
+        "description": null,
+        "status": "in_progress",
+        "module": "\u001b[0;90m[19:17:18]\u001b[0m \u001b[1;33m⚠\u001b[0m 롤 �� 활성 모듈이 없습니다",
+        "started_at": "2026-01-18T19:17:18+09:00",
+        "completed_at": null
+      }
+    ],
+    "status": "in_progress"
+  }
+}

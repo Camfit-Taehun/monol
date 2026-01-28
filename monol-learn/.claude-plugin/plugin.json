@@ -1,0 +1,6 @@
+{
+  "name": "monol-learn",
+  "version": "0.1.0",
+  "description": "Self-learning infrastructure for Claude Code agents",
+  "pluginPackage": "../monol-learn-pkg"
+}

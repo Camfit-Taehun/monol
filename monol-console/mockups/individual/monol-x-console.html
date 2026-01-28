@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol X Console - Mockup</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --accent-purple: #a855f7;
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --accent-orange: #f97316;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 48px; height: 48px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .logo h1 { font-size: 22px; background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .logo span { display: block; font-size: 12px; color: var(--text-secondary); }
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: var(--bg-secondary);
+      padding: 4px;
+      border-radius: 8px;
+      width: fit-content;
+    }
+    .tab {
+      padding: 10px 20px;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .tab.active { background: var(--accent-purple); color: #fff; }
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 24px;
+    }
+    .modules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .module-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+    .module-card:hover { border-color: var(--accent-purple); transform: translateY(-2px); }
+    .module-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .module-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+    }
+    .module-title { font-size: 16px; font-weight: 600; }
+    .module-type { font-size: 12px; color: var(--accent-purple); }
+    .module-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 20px; font-weight: 700; }
+    .stat-label { font-size: 11px; color: var(--text-secondary); }
+    .progress-bar {
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+      border-radius: 3px;
+    }
+    .module-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-primary { background: var(--accent-purple); border-color: var(--accent-purple); color: #fff; }
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .sidebar-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .sidebar-card h3 { font-size: 14px; margin-bottom: 12px; }
+    .evolution-score {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent-purple) 0% 84%, var(--bg-tertiary) 84% 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+    .score-inner {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .score-value { font-size: 28px; font-weight: 700; }
+    .score-label { font-size: 12px; color: var(--text-secondary); }
+    .trait-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .trait-item:last-child { border-bottom: none; }
+    .trait-icon { font-size: 18px; }
+    .trait-info { flex: 1; }
+    .trait-name { font-size: 13px; font-weight: 500; }
+    .trait-bar {
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      margin-top: 4px;
+    }
+    .trait-fill { height: 100%; border-radius: 2px; }
+    .trait-value { font-size: 14px; font-weight: 600; }
+    .lesson-item {
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .lesson-item:last-child { margin-bottom: 0; }
+    .lesson-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .lesson-meta { font-size: 11px; color: var(--text-secondary); }
+    .mockup-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <div class="logo-icon">🎮</div>
+        <div>
+          <h1>Monol X</h1>
+          <span>AI Personality Evolution</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn">📊 Analytics</button>
+        <button class="btn btn-primary">+ New Module</button>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active">🧩 Modules</button>
+      <button class="tab">📈 Evolution</button>
+      <button class="tab">📚 Lessons</button>
+      <button class="tab">⚙️ Settings</button>
+    </div>
+
+    <div class="content-grid">
+      <main class="modules-grid">
+        <div class="module-card">
+          <div class="module-header">
+            <div class="module-icon">🎨</div>
+            <div>
+              <div class="module-title">Creative Writer</div>
+              <div class="module-type">Expression Module</div>
+            </div>
+          </div>
+          <div class="module-stats">
+            <div class="stat-item">
+              <div class="stat-value">89%</div>
+              <div class="stat-label">Usage</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">4.8</div>
+              <div class="stat-label">Rating</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">156</div>
+              <div class="stat-label">Sessions</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 89%;"></div></div>
+          <div class="module-actions">
+            <button class="btn">Configure</button>
+            <button class="btn btn-primary">Active</button>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-header">
+            <div class="module-icon">🔬</div>
+            <div>
+              <div class="module-title">Analytical Thinker</div>
+              <div class="module-type">Reasoning Module</div>
+            </div>
+          </div>
+          <div class="module-stats">
+            <div class="stat-item">
+              <div class="stat-value">76%</div>
+              <div class="stat-label">Usage</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">4.6</div>
+              <div class="stat-label">Rating</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">89</div>
+              <div class="stat-label">Sessions</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 76%;"></div></div>
+          <div class="module-actions">
+            <button class="btn">Configure</button>
+            <button class="btn btn-primary">Active</button>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-header">
+            <div class="module-icon">💡</div>
+            <div>
+              <div class="module-title">Problem Solver</div>
+              <div class="module-type">Strategy Module</div>
+            </div>
+          </div>
+          <div class="module-stats">
+            <div class="stat-item">
+              <div class="stat-value">92%</div>
+              <div class="stat-label">Usage</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">4.9</div>
+              <div class="stat-label">Rating</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">234</div>
+              <div class="stat-label">Sessions</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 92%;"></div></div>
+          <div class="module-actions">
+            <button class="btn">Configure</button>
+            <button class="btn btn-primary">Active</button>
+          </div>
+        </div>
+
+        <div class="module-card">
+          <div class="module-header">
+            <div class="module-icon">🤝</div>
+            <div>
+              <div class="module-title">Empathetic Listener</div>
+              <div class="module-type">Social Module</div>
+            </div>
+          </div>
+          <div class="module-stats">
+            <div class="stat-item">
+              <div class="stat-value">68%</div>
+              <div class="stat-label">Usage</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">4.7</div>
+              <div class="stat-label">Rating</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">67</div>
+              <div class="stat-label">Sessions</div>
+            </div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width: 68%;"></div></div>
+          <div class="module-actions">
+            <button class="btn">Configure</button>
+            <button class="btn">Enable</button>
+          </div>
+        </div>
+      </main>
+
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <h3>🎯 Evolution Score</h3>
+          <div class="evolution-score">
+            <div class="score-circle">
+              <div class="score-inner">
+                <div class="score-value">8.4</div>
+                <div class="score-label">/ 10</div>
+              </div>
+            </div>
+            <div style="color: #22c55e; font-size: 13px;">↑ 0.3 this week</div>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>🧬 Personality Traits</h3>
+          <div class="trait-item">
+            <span class="trait-icon">🎨</span>
+            <div class="trait-info">
+              <div class="trait-name">Creativity</div>
+              <div class="trait-bar"><div class="trait-fill" style="width: 85%; background: #a855f7;"></div></div>
+            </div>
+            <span class="trait-value">8.5</span>
+          </div>
+          <div class="trait-item">
+            <span class="trait-icon">🔬</span>
+            <div class="trait-info">
+              <div class="trait-name">Analytical</div>
+              <div class="trait-bar"><div class="trait-fill" style="width: 78%; background: #06b6d4;"></div></div>
+            </div>
+            <span class="trait-value">7.8</span>
+          </div>
+          <div class="trait-item">
+            <span class="trait-icon">💬</span>
+            <div class="trait-info">
+              <div class="trait-name">Communication</div>
+              <div class="trait-bar"><div class="trait-fill" style="width: 90%; background: #22c55e;"></div></div>
+            </div>
+            <span class="trait-value">9.0</span>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3>📚 Recent Lessons</h3>
+          <div class="lesson-item">
+            <div class="lesson-title">Concise responses preferred</div>
+            <div class="lesson-meta">2 hours ago · High impact</div>
+          </div>
+          <div class="lesson-item">
+            <div class="lesson-title">Korean for casual talks</div>
+            <div class="lesson-meta">1 day ago · Medium impact</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="mockup-badge">🎨 MOCKUP</div>
+</body>
+</html>

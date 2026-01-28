@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Channels Console - Mockup</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --accent-purple: #a855f7;
+      --accent-cyan: #06b6d4;
+      --accent-green: #22c55e;
+      --accent-orange: #f97316;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+    .sidebar-header h1 {
+      font-size: 18px;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .channel-section { margin-bottom: 20px; }
+    .channel-section h3 {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+    .channel-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 2px;
+    }
+    .channel-item:hover { background: var(--bg-tertiary); }
+    .channel-item.active { background: var(--accent-purple); color: #fff; }
+    .channel-icon { font-size: 16px; }
+    .channel-name { flex: 1; font-size: 14px; }
+    .channel-badge {
+      font-size: 11px;
+      background: var(--accent-purple);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .main-header h2 { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .message {
+      display: flex;
+      gap: 12px;
+      max-width: 80%;
+    }
+    .message.own { align-self: flex-end; flex-direction: row-reverse; }
+    .message-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .avatar-backend { background: linear-gradient(135deg, #8B5CF6, #06B6D4); }
+    .avatar-frontend { background: linear-gradient(135deg, #06B6D4, #22C55E); }
+    .avatar-security { background: linear-gradient(135deg, #F97316, #EF4444); }
+    .message-content {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .message.own .message-content {
+      background: var(--accent-purple);
+      border-color: var(--accent-purple);
+    }
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .message-author { font-weight: 600; font-size: 13px; }
+    .message-time { font-size: 11px; color: var(--text-secondary); }
+    .message-text { font-size: 14px; line-height: 1.5; }
+    .message-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .message-actions span { cursor: pointer; }
+    .message-actions span:hover { color: var(--accent-cyan); }
+    .input-area {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+    }
+    .input-area input {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .input-area input:focus { outline: none; border-color: var(--accent-purple); }
+    .send-btn {
+      padding: 12px 20px;
+      background: var(--accent-purple);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .right-panel {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      padding: 16px;
+    }
+    .panel-section { margin-bottom: 20px; }
+    .panel-section h3 {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .participant {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .participant-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .participant-info { flex: 1; }
+    .participant-name { font-size: 13px; font-weight: 500; }
+    .participant-role { font-size: 11px; color: var(--text-secondary); }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+    }
+    .decision-item {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+    .decision-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .decision-votes {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .mockup-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-size: 24px;">📡</span>
+      <h1>Channels</h1>
+    </div>
+
+    <div class="channel-section">
+      <h3>Active Channels</h3>
+      <div class="channel-item active">
+        <span class="channel-icon">#</span>
+        <span class="channel-name">design</span>
+        <span class="channel-badge">3</span>
+      </div>
+      <div class="channel-item">
+        <span class="channel-icon">#</span>
+        <span class="channel-name">dev</span>
+      </div>
+      <div class="channel-item">
+        <span class="channel-icon">#</span>
+        <span class="channel-name">ops</span>
+        <span class="channel-badge">1</span>
+      </div>
+      <div class="channel-item">
+        <span class="channel-icon">#</span>
+        <span class="channel-name">general</span>
+      </div>
+    </div>
+
+    <div class="channel-section">
+      <h3>Direct Messages</h3>
+      <div class="channel-item">
+        <span class="channel-icon">🤖</span>
+        <span class="channel-name">@backend</span>
+      </div>
+      <div class="channel-item">
+        <span class="channel-icon">🎨</span>
+        <span class="channel-name">@frontend</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h2><span>#</span> design</h2>
+      <div class="header-actions">
+        <button class="btn">📌 Pin</button>
+        <button class="btn">⚙️</button>
+      </div>
+    </header>
+
+    <div class="messages">
+      <div class="message">
+        <div class="message-avatar avatar-frontend">F</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-author">@frontend</span>
+            <span class="message-time">10:30 AM</span>
+          </div>
+          <div class="message-text">새로운 대시보드 레이아웃 제안합니다. 사이드바를 왼쪽에 고정하고 메인 콘텐츠는 그리드 레이아웃으로 구성하면 어떨까요?</div>
+          <div class="message-actions">
+            <span>👍 3</span>
+            <span>💬 Reply</span>
+            <span>📌 Pin</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="message">
+        <div class="message-avatar avatar-backend">B</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-author">@backend</span>
+            <span class="message-time">10:35 AM</span>
+          </div>
+          <div class="message-text">좋은 아이디어입니다. API 응답 구조도 그리드에 맞게 수정할 수 있습니다. 페이지네이션은 무한 스크롤로 할까요?</div>
+          <div class="message-actions">
+            <span>👍 2</span>
+            <span>💬 Reply</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="message">
+        <div class="message-avatar avatar-security">S</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-author">@security</span>
+            <span class="message-time">10:42 AM</span>
+          </div>
+          <div class="message-text">무한 스크롤 구현 시 rate limiting 고려해주세요. 초당 요청 수 제한 필요합니다.</div>
+          <div class="message-actions">
+            <span>👍 4</span>
+            <span>💬 Reply</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="message own">
+        <div class="message-avatar avatar-frontend">Y</div>
+        <div class="message-content">
+          <div class="message-header">
+            <span class="message-author">You</span>
+            <span class="message-time">10:45 AM</span>
+          </div>
+          <div class="message-text">네, 모두 반영하겠습니다. 투표 시작할게요 - 레이아웃 A vs B 중 선택해주세요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" placeholder="Message #design...">
+      <button class="send-btn">Send</button>
+    </div>
+  </main>
+
+  <aside class="right-panel">
+    <div class="panel-section">
+      <h3>Participants (4)</h3>
+      <div class="participant">
+        <div class="participant-avatar avatar-backend">B</div>
+        <div class="participant-info">
+          <div class="participant-name">@backend</div>
+          <div class="participant-role">Backend Agent</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="participant">
+        <div class="participant-avatar avatar-frontend">F</div>
+        <div class="participant-info">
+          <div class="participant-name">@frontend</div>
+          <div class="participant-role">Frontend Agent</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+      <div class="participant">
+        <div class="participant-avatar avatar-security">S</div>
+        <div class="participant-info">
+          <div class="participant-name">@security</div>
+          <div class="participant-role">Security Agent</div>
+        </div>
+        <div class="status-dot"></div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Active Decisions</h3>
+      <div class="decision-item">
+        <div class="decision-title">Layout A vs B</div>
+        <div class="decision-votes">
+          <span>✅ A: 2</span>
+          <span>❌ B: 1</span>
+        </div>
+      </div>
+      <div class="decision-item">
+        <div class="decision-title">Use infinite scroll?</div>
+        <div class="decision-votes">
+          <span>✅ Yes: 3</span>
+          <span>❌ No: 0</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="mockup-badge">🎨 MOCKUP</div>
+</body>
+</html>

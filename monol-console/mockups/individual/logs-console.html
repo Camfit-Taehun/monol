@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Logs Console - Mockup</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --accent-green: #22c55e;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-orange: #f97316;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+    .sidebar-header h1 {
+      font-size: 18px;
+      background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+    }
+    .filter-section { margin-bottom: 20px; }
+    .filter-section h3 {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .filter-item:hover { background: var(--bg-tertiary); }
+    .filter-item.active { background: var(--accent-green); color: #000; }
+    .filter-count { margin-left: auto; font-size: 11px; opacity: 0.7; }
+    .author-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .main-header h2 { font-size: 16px; }
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: 6px;
+    }
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      background: none;
+      color: var(--text-secondary);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .view-btn.active { background: var(--bg-secondary); color: var(--text-primary); }
+    .sessions-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+    }
+    .date-group { margin-bottom: 24px; }
+    .date-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .session-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .session-item:hover { border-color: var(--accent-green); }
+    .session-item.selected { border-color: var(--accent-green); background: rgba(34, 197, 94, 0.05); }
+    .session-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .avatar-kent { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+    .avatar-alice { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .session-content { flex: 1; min-width: 0; }
+    .session-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .session-excerpt { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .session-meta { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+    .session-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: flex-end;
+    }
+    .session-time { font-size: 12px; color: var(--text-secondary); }
+    .session-badges { display: flex; gap: 4px; }
+    .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-tertiary);
+    }
+    .badge-starred { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .detail-panel {
+      width: 400px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .detail-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .detail-meta { font-size: 12px; color: var(--text-secondary); }
+    .detail-actions { display: flex; gap: 8px; }
+    .action-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .detail-section { margin-bottom: 20px; }
+    .detail-section h3 { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+    .message-preview {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      padding: 4px 10px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    .mockup-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 420px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-size: 24px;">📝</span>
+      <h1>Monol Logs</h1>
+    </div>
+
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Search sessions...">
+    </div>
+
+    <div class="filter-section">
+      <h3>View</h3>
+      <div class="filter-item active">
+        <span>📋</span>
+        <span>All Sessions</span>
+        <span class="filter-count">1,847</span>
+      </div>
+      <div class="filter-item">
+        <span>⭐</span>
+        <span>Starred</span>
+        <span class="filter-count">42</span>
+      </div>
+      <div class="filter-item">
+        <span>📅</span>
+        <span>Today</span>
+        <span class="filter-count">23</span>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Authors</h3>
+      <div class="filter-item">
+        <div class="author-avatar avatar-kent">K</div>
+        <span>Kent</span>
+        <span class="filter-count">892</span>
+      </div>
+      <div class="filter-item">
+        <div class="author-avatar avatar-alice">A</div>
+        <span>Alice</span>
+        <span class="filter-count">456</span>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <h3>Projects</h3>
+      <div class="filter-item">
+        <span>📁</span>
+        <span>monol-console</span>
+        <span class="filter-count">156</span>
+      </div>
+      <div class="filter-item">
+        <span>📁</span>
+        <span>monol-server</span>
+        <span class="filter-count">89</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h2>📋 All Sessions</h2>
+      <div class="view-toggle">
+        <button class="view-btn active">List</button>
+        <button class="view-btn">Timeline</button>
+        <button class="view-btn">Calendar</button>
+      </div>
+    </header>
+
+    <div class="sessions-list">
+      <div class="date-group">
+        <div class="date-label">Today · January 21, 2026</div>
+        <div class="session-item selected">
+          <div class="session-avatar avatar-kent">K</div>
+          <div class="session-content">
+            <div class="session-title">GitHub 웹훅 자동 갱신 구현</div>
+            <div class="session-excerpt">POST /api/webhooks/github 엔드포인트 생성, WebSocket 알림 구현...</div>
+            <div class="session-meta">
+              <span>💬 45 messages</span>
+              <span>⏱️ 2h 15m</span>
+              <span>🏷️ monol-server</span>
+            </div>
+          </div>
+          <div class="session-actions">
+            <span class="session-time">14:32</span>
+            <div class="session-badges">
+              <span class="badge badge-starred">⭐</span>
+            </div>
+          </div>
+        </div>
+        <div class="session-item">
+          <div class="session-avatar avatar-kent">K</div>
+          <div class="session-content">
+            <div class="session-title">통합 콘솔 컴포넌트 확충</div>
+            <div class="session-excerpt">Phase 1-4 컴포넌트 개발 완료, LogsStatsCard, ChannelsDecisionList...</div>
+            <div class="session-meta">
+              <span>💬 128 messages</span>
+              <span>⏱️ 4h 30m</span>
+              <span>🏷️ monol-console</span>
+            </div>
+          </div>
+          <div class="session-actions">
+            <span class="session-time">11:20</span>
+            <div class="session-badges">
+              <span class="badge badge-starred">⭐</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="date-group">
+        <div class="date-label">Yesterday · January 20, 2026</div>
+        <div class="session-item">
+          <div class="session-avatar avatar-alice">A</div>
+          <div class="session-content">
+            <div class="session-title">Plugin Scout 추천 알고리즘 개선</div>
+            <div class="session-excerpt">점수 계산 가중치 조정, 프로젝트 매칭 정확도 향상...</div>
+            <div class="session-meta">
+              <span>💬 67 messages</span>
+              <span>⏱️ 1h 45m</span>
+              <span>🏷️ monol-plugin-scout</span>
+            </div>
+          </div>
+          <div class="session-actions">
+            <span class="session-time">15:30</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="detail-panel">
+    <div class="detail-header">
+      <div>
+        <div class="detail-title">GitHub 웹훅 자동 갱신 구현</div>
+        <div class="detail-meta">Today 14:32 · 2h 15m · 45 messages</div>
+      </div>
+      <div class="detail-actions">
+        <button class="action-btn">⭐</button>
+        <button class="action-btn">📤</button>
+        <button class="action-btn">🗑️</button>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Summary</h3>
+      <div class="message-preview">
+        GitHub 웹훅을 통한 플러그인 자동 갱신 시스템 구현:
+        • POST /api/webhooks/github 엔드포인트 생성
+        • HMAC-SHA256 시크릿 검증
+        • git pull 자동 실행
+        • WebSocket으로 브라우저 실시간 알림
+        • 수동 리로드 API 추가
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Tags</h3>
+      <div class="tag-list">
+        <span class="tag">🏷️ monol-server</span>
+        <span class="tag">🔧 webhook</span>
+        <span class="tag">🔌 websocket</span>
+        <span class="tag">🚀 feature</span>
+      </div>
+    </div>
+
+    <div class="detail-section">
+      <h3>Files Changed</h3>
+      <div class="message-preview">
+        • src/api/webhooks.js (new)
+        • src/api/plugins.js (modified)
+        • server.js (modified)
+        • public/index.html (modified)
+      </div>
+    </div>
+  </aside>
+
+  <div class="mockup-badge">🎨 MOCKUP</div>
+</body>
+</html>

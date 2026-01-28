@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workbase Console - Mockup</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #22c55e;
+      --accent-orange: #f97316;
+      --accent-purple: #a855f7;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-header h1 {
+      font-size: 18px;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .workspace-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    .workspace-section { margin-bottom: 16px; }
+    .workspace-section h3 {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      padding: 8px 12px;
+    }
+    .workspace-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: all 0.2s;
+    }
+    .workspace-item:hover { background: var(--bg-tertiary); }
+    .workspace-item.active { background: var(--accent-blue); color: #fff; }
+    .workspace-icon {
+      width: 32px; height: 32px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      background: var(--bg-tertiary);
+    }
+    .workspace-item.active .workspace-icon { background: rgba(255,255,255,0.2); }
+    .workspace-info { flex: 1; min-width: 0; }
+    .workspace-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .workspace-path { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .workspace-item.active .workspace-path { color: rgba(255,255,255,0.7); }
+    .workspace-status {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .main-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-title { display: flex; align-items: center; gap: 12px; }
+    .header-title h2 { font-size: 18px; }
+    .header-path { font-size: 12px; color: var(--text-secondary); }
+    .header-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-primary { background: var(--accent-blue); border-color: var(--accent-blue); }
+    .content-area {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .file-explorer {
+      width: 300px;
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+    .explorer-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .file-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .tree-item:hover { background: var(--bg-tertiary); }
+    .tree-item.selected { background: var(--accent-blue); color: #fff; }
+    .tree-folder { padding-left: 0; }
+    .tree-file { padding-left: 20px; }
+    .tree-icon { font-size: 14px; }
+    .tree-name { flex: 1; }
+    .tree-status { font-size: 10px; color: var(--accent-green); }
+    .editor-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .tabs-bar {
+      display: flex;
+      gap: 0;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .tab {
+      padding: 10px 16px;
+      font-size: 13px;
+      border-right: 1px solid var(--border-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab.active { background: var(--bg-primary); }
+    .tab-close {
+      font-size: 10px;
+      opacity: 0.5;
+      cursor: pointer;
+    }
+    .tab-close:hover { opacity: 1; }
+    .editor-content {
+      flex: 1;
+      padding: 16px 20px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      overflow: auto;
+      background: var(--bg-primary);
+    }
+    .code-line {
+      display: flex;
+      gap: 16px;
+    }
+    .line-number {
+      color: var(--text-secondary);
+      user-select: none;
+      min-width: 30px;
+      text-align: right;
+    }
+    .line-content { flex: 1; }
+    .keyword { color: #c678dd; }
+    .string { color: #98c379; }
+    .function { color: #61afef; }
+    .comment { color: #5c6370; }
+    .right-panel {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .panel-section { margin-bottom: 20px; }
+    .panel-section h3 { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; }
+    .git-status {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .git-branch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .git-changes {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .change-added { color: var(--accent-green); }
+    .change-modified { color: var(--accent-orange); }
+    .change-deleted { color: #ef4444; }
+    .session-info {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .session-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 12px;
+    }
+    .session-label { color: var(--text-secondary); }
+    .recent-files {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .recent-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--bg-tertiary);
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .recent-file:hover { background: var(--bg-primary); }
+    .mockup-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 300px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-size: 24px;">🏢</span>
+      <h1>Workbase</h1>
+    </div>
+
+    <div class="workspace-list">
+      <div class="workspace-section">
+        <h3>Recent Workspaces</h3>
+        <div class="workspace-item active">
+          <div class="workspace-icon">🔧</div>
+          <div class="workspace-info">
+            <div class="workspace-name">monol-console</div>
+            <div class="workspace-path">~/Work/monol/monol-console</div>
+          </div>
+          <div class="workspace-status"></div>
+        </div>
+        <div class="workspace-item">
+          <div class="workspace-icon">🔌</div>
+          <div class="workspace-info">
+            <div class="workspace-name">monol-plugin-scout</div>
+            <div class="workspace-path">~/Work/monol/monol-plugin-scout</div>
+          </div>
+        </div>
+        <div class="workspace-item">
+          <div class="workspace-icon">📡</div>
+          <div class="workspace-info">
+            <div class="workspace-name">monol-channels</div>
+            <div class="workspace-path">~/Work/monol/monol-channels</div>
+          </div>
+        </div>
+        <div class="workspace-item">
+          <div class="workspace-icon">🎮</div>
+          <div class="workspace-info">
+            <div class="workspace-name">monol-x</div>
+            <div class="workspace-path">~/Work/monol/monol-x</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="workspace-section">
+        <h3>Pinned</h3>
+        <div class="workspace-item">
+          <div class="workspace-icon">📝</div>
+          <div class="workspace-info">
+            <div class="workspace-name">monol-logs</div>
+            <div class="workspace-path">~/Work/monol/monol-logs</div>
+          </div>
+        </div>
+        <div class="workspace-item">
+          <div class="workspace-icon">📖</div>
+          <div class="workspace-info">
+            <div class="workspace-name">monol-rulebook</div>
+            <div class="workspace-path">~/Work/monol/monol-rulebook</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <div class="header-title">
+        <h2>🔧 monol-console</h2>
+        <span class="header-path">~/Work/monol/monol-console</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn">🔄 Sync</button>
+        <button class="btn">⚙️</button>
+        <button class="btn btn-primary">▶️ Start Session</button>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <div class="file-explorer">
+        <div class="explorer-header">
+          <span>FILES</span>
+          <span>+</span>
+        </div>
+        <div class="file-tree">
+          <div class="tree-item tree-folder">
+            <span class="tree-icon">📁</span>
+            <span class="tree-name">mockups</span>
+          </div>
+          <div class="tree-item tree-folder" style="padding-left: 16px;">
+            <span class="tree-icon">📁</span>
+            <span class="tree-name">integrated</span>
+          </div>
+          <div class="tree-item tree-folder" style="padding-left: 16px;">
+            <span class="tree-icon">📁</span>
+            <span class="tree-name">individual</span>
+          </div>
+          <div class="tree-item tree-folder">
+            <span class="tree-icon">📁</span>
+            <span class="tree-name">public</span>
+          </div>
+          <div class="tree-item tree-file selected">
+            <span class="tree-icon">📄</span>
+            <span class="tree-name">index.html</span>
+            <span class="tree-status">M</span>
+          </div>
+          <div class="tree-item tree-folder">
+            <span class="tree-icon">📁</span>
+            <span class="tree-name">src</span>
+          </div>
+          <div class="tree-item tree-file" style="padding-left: 36px;">
+            <span class="tree-icon">📄</span>
+            <span class="tree-name">webhooks.js</span>
+            <span class="tree-status">M</span>
+          </div>
+          <div class="tree-item tree-file">
+            <span class="tree-icon">📄</span>
+            <span class="tree-name">server.js</span>
+            <span class="tree-status">M</span>
+          </div>
+          <div class="tree-item tree-file">
+            <span class="tree-icon">📄</span>
+            <span class="tree-name">package.json</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-area">
+        <div class="tabs-bar">
+          <div class="tab active">
+            <span>📄</span>
+            <span>index.html</span>
+            <span class="tab-close">×</span>
+          </div>
+          <div class="tab">
+            <span>📄</span>
+            <span>server.js</span>
+            <span class="tab-close">×</span>
+          </div>
+        </div>
+        <div class="editor-content">
+          <div class="code-line"><span class="line-number">1</span><span class="line-content"><span class="keyword">&lt;!DOCTYPE</span> html<span class="keyword">&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">2</span><span class="line-content"><span class="keyword">&lt;html</span> lang=<span class="string">"ko"</span> class=<span class="string">"dark"</span><span class="keyword">&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">3</span><span class="line-content"><span class="keyword">&lt;head&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">4</span><span class="line-content">  <span class="keyword">&lt;meta</span> charset=<span class="string">"UTF-8"</span><span class="keyword">&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">5</span><span class="line-content">  <span class="keyword">&lt;title&gt;</span>Monol Console<span class="keyword">&lt;/title&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">6</span><span class="line-content">  <span class="comment">&lt;!-- Monol Design System --&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">7</span><span class="line-content">  <span class="keyword">&lt;link</span> rel=<span class="string">"stylesheet"</span> href=<span class="string">"design-system.css"</span><span class="keyword">&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">8</span><span class="line-content"><span class="keyword">&lt;/head&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">9</span><span class="line-content"><span class="keyword">&lt;body&gt;</span></span></div>
+          <div class="code-line"><span class="line-number">10</span><span class="line-content">  <span class="comment">&lt;!-- Main Container --&gt;</span></span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="right-panel">
+    <div class="panel-section">
+      <h3>Git Status</h3>
+      <div class="git-status">
+        <div class="git-branch">
+          <span>🔀</span>
+          <span>master</span>
+        </div>
+        <div class="git-changes">
+          <span class="change-added">+5 added</span>
+          <span class="change-modified">~3 modified</span>
+          <span class="change-deleted">-1 deleted</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Current Session</h3>
+      <div class="session-info">
+        <div class="session-stat">
+          <span class="session-label">Duration</span>
+          <span>2h 15m</span>
+        </div>
+        <div class="session-stat">
+          <span class="session-label">Messages</span>
+          <span>45</span>
+        </div>
+        <div class="session-stat">
+          <span class="session-label">Files Changed</span>
+          <span>8</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>Recent Files</h3>
+      <div class="recent-files">
+        <div class="recent-file">
+          <span>📄</span>
+          <span>webhooks.js</span>
+        </div>
+        <div class="recent-file">
+          <span>📄</span>
+          <span>plugins.js</span>
+        </div>
+        <div class="recent-file">
+          <span>📄</span>
+          <span>index.html</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="mockup-badge">🎨 MOCKUP</div>
+</body>
+</html>

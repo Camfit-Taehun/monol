@@ -1,0 +1,1727 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Session Dashboard v2 - monol-logs</title>
+  <!-- Monol Design System -->
+  <link rel="stylesheet" href="../../../../monol-design/monol-design.min.css">
+  <style>
+    :root {
+      /* Monol Design System Colors */
+      --bg-primary: var(--monol-bg-base, #0a0a0a);
+      --bg-secondary: var(--monol-bg-elevated, #171717);
+      --bg-tertiary: var(--monol-bg-surface, #1a1a1a);
+      --bg-card: var(--monol-bg-elevated, #171717);
+      --text-primary: var(--monol-fg-base, #fafafa);
+      --text-secondary: var(--monol-fg-muted, #a3a3a3);
+      --text-muted: var(--monol-fg-subtle, #737373);
+      --border-color: var(--monol-border-base, #262626);
+      --accent-blue: var(--monol-info, #3b82f6);
+      --accent-green: var(--monol-success, #22c55e);
+      --accent-purple: #a855f7;
+      --accent-orange: var(--monol-primary, #f97316);
+      --accent-red: var(--monol-error, #ef4444);
+      --accent-cyan: #06b6d4;
+      --accent-pink: #ec4899;
+      --heatmap-0: #171717;
+      --heatmap-1: #14532d;
+      --heatmap-2: #166534;
+      --heatmap-3: #22c55e;
+      --heatmap-4: #4ade80;
+    }
+
+    .light-theme {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --bg-tertiary: #eaeef2;
+      --bg-card: #ffffff;
+      --text-primary: #24292f;
+      --text-secondary: #57606a;
+      --text-muted: #8c959f;
+      --border-color: #d0d7de;
+      --heatmap-0: #ebedf0;
+      --heatmap-1: #9be9a8;
+      --heatmap-2: #40c463;
+      --heatmap-3: #30a14e;
+      --heatmap-4: #216e39;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo h1 { font-size: 20px; font-weight: 600; }
+    .logo span { color: var(--text-secondary); font-size: 14px; }
+
+    .header-controls { display: flex; align-items: center; gap: 16px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-tertiary);
+      padding: 4px;
+      border-radius: 8px;
+    }
+    .tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover { color: var(--text-primary); }
+    .tab.active {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .header-actions { display: flex; gap: 8px; }
+
+    .btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: var(--bg-tertiary); }
+    .btn-primary {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-small { padding: 4px 8px; font-size: 12px; }
+
+    /* User Selector */
+    .user-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .user-selector label { font-size: 14px; color: var(--text-secondary); }
+    .user-selector select {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    /* Insights Section */
+    .insights-section {
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .insights-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent-orange);
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .insight-card {
+      background: var(--bg-primary);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .insight-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .insight-icon.blue { background: rgba(88, 166, 255, 0.2); }
+    .insight-icon.green { background: rgba(63, 185, 80, 0.2); }
+    .insight-icon.purple { background: rgba(163, 113, 247, 0.2); }
+    .insight-icon.orange { background: rgba(210, 153, 34, 0.2); }
+    .insight-content { flex: 1; }
+    .insight-title { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
+    .insight-value { font-size: 14px; font-weight: 500; }
+
+    /* View Containers */
+    .view-container { display: none; }
+    .view-container.active { display: block; }
+
+    /* Stats Grid */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .stat-label { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; }
+    .stat-value { font-size: 28px; font-weight: 600; color: var(--accent-blue); }
+    .stat-change { font-size: 12px; margin-top: 4px; }
+    .stat-change.positive { color: var(--accent-green); }
+    .stat-change.negative { color: var(--accent-red); }
+
+    /* Heatmap */
+    .heatmap-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .heatmap-container { overflow-x: auto; }
+    .heatmap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .heatmap-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .heatmap-label {
+      width: 30px;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: right;
+      padding-right: 8px;
+    }
+    .heatmap-cells { display: flex; gap: 3px; }
+    .heatmap-cell {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .heatmap-cell:hover { transform: scale(1.3); }
+    .heatmap-cell[data-level="0"] { background: var(--heatmap-0); }
+    .heatmap-cell[data-level="1"] { background: var(--heatmap-1); }
+    .heatmap-cell[data-level="2"] { background: var(--heatmap-2); }
+    .heatmap-cell[data-level="3"] { background: var(--heatmap-3); }
+    .heatmap-cell[data-level="4"] { background: var(--heatmap-4); }
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .heatmap-header {
+      display: flex;
+      margin-left: 38px;
+      margin-bottom: 4px;
+    }
+    .heatmap-header span {
+      width: 17px;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Chart Section */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .chart-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .donut-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .donut-chart {
+      position: relative;
+      width: 180px;
+      height: 180px;
+    }
+    .donut-chart svg { transform: rotate(-90deg); }
+    .donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .donut-center .value { font-size: 24px; font-weight: 600; }
+    .donut-center .label { font-size: 12px; color: var(--text-secondary); }
+    .donut-legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Bar Chart */
+    .bar-chart { display: flex; flex-direction: column; gap: 12px; }
+    .bar-item { display: flex; align-items: center; gap: 12px; }
+    .bar-label { width: 80px; font-size: 13px; color: var(--text-secondary); }
+    .bar-track {
+      flex: 1;
+      height: 24px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 12px;
+      color: white;
+      font-weight: 500;
+      transition: width 0.5s ease;
+    }
+
+    /* Timeline */
+    .timeline-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .timeline-container { overflow-x: auto; }
+    .timeline { min-width: 600px; }
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      margin-left: 100px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .timeline-author {
+      width: 100px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .timeline-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: white;
+      font-weight: 600;
+    }
+    .timeline-bars {
+      flex: 1;
+      height: 28px;
+      position: relative;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+    }
+    .timeline-bar {
+      position: absolute;
+      height: 24px;
+      top: 2px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      padding: 0 6px;
+      font-size: 10px;
+      color: white;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .timeline-bar:hover { filter: brightness(1.2); z-index: 10; }
+
+    /* Sessions Grid */
+    .sessions-section { margin-bottom: 24px; }
+    .sessions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 16px;
+    }
+    .session-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.15s;
+    }
+    .session-card:hover { border-color: var(--accent-blue); }
+    .session-card.expanded { grid-column: 1 / -1; }
+    .session-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .session-topic { font-size: 15px; font-weight: 600; }
+    .session-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+    .author-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .session-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .session-insight {
+      background: rgba(210, 153, 34, 0.1);
+      border-left: 3px solid var(--accent-orange);
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12px;
+      color: var(--accent-orange);
+    }
+    .session-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .session-actions .btn { text-align: center; font-size: 12px; }
+
+    /* Preview Section */
+    .session-preview {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      display: none;
+    }
+    .session-preview.show { display: block; }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .preview-title { font-size: 13px; font-weight: 600; color: var(--accent-blue); }
+    .preview-content {
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .preview-content h2 { font-size: 14px; margin: 16px 0 8px; color: var(--accent-blue); font-weight: 600; }
+    .preview-content h2:first-child { margin-top: 0; }
+    .preview-content ul { margin-left: 20px; margin-bottom: 12px; }
+    .preview-content li { margin-bottom: 4px; }
+    .preview-content .msg-user { color: var(--accent-green); font-weight: 600; }
+    .preview-content .msg-assistant { color: var(--accent-purple); font-weight: 600; }
+    .preview-content .msg-content { margin-left: 12px; margin-bottom: 12px; white-space: pre-wrap; }
+    .preview-content code {
+      background: var(--bg-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 12px;
+    }
+    .preview-content .file-change {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+    }
+    .preview-content .file-add { color: var(--accent-green); }
+    .preview-content .file-mod { color: var(--accent-orange); }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { font-size: 16px; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .resume-command {
+      background: var(--bg-primary);
+      padding: 12px;
+      border-radius: 6px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 13px;
+      color: var(--accent-green);
+      margin-bottom: 12px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent-green);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 1001;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      pointer-events: none;
+      z-index: 1000;
+      max-width: 300px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .chart-row { grid-template-columns: 1fr; }
+      header { flex-direction: column; gap: 16px; align-items: flex-start; }
+      .header-controls { width: 100%; flex-wrap: wrap; }
+    }
+    @media (max-width: 600px) {
+      .container { padding: 16px; }
+      .sessions-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <h1>Session Dashboard</h1>
+        <span>v2.0</span>
+      </div>
+      <div class="header-controls">
+        <div class="tabs">
+          <button class="tab active" onclick="switchView('personal')">Personal</button>
+          <button class="tab" onclick="switchView('team')">Team</button>
+        </div>
+        <div class="user-selector" id="userSelector">
+          <label>User:</label>
+          <select id="currentUser" onchange="onUserChange()"></select>
+        </div>
+        <div class="header-actions">
+          <button class="btn" onclick="toggleTheme()">Theme</button>
+          <button class="btn" onclick="exportData()">Export</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Insights Section -->
+    <section class="insights-section" id="insightsSection">
+      <div class="insights-header">
+        <span>&#128161;</span> Insights
+      </div>
+      <div class="insights-grid" id="insightsGrid"></div>
+    </section>
+
+    <!-- Personal View -->
+    <div class="view-container active" id="personalView">
+      <div class="stats-row" id="personalStats"></div>
+
+      <section class="heatmap-section">
+        <h2 class="section-title">Activity Heatmap</h2>
+        <div class="heatmap-container">
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+        <div class="heatmap-legend">
+          <span>Less</span>
+          <div class="heatmap-cell" data-level="0"></div>
+          <div class="heatmap-cell" data-level="1"></div>
+          <div class="heatmap-cell" data-level="2"></div>
+          <div class="heatmap-cell" data-level="3"></div>
+          <div class="heatmap-cell" data-level="4"></div>
+          <span>More</span>
+        </div>
+      </section>
+
+      <section class="sessions-section">
+        <h2 class="section-title">My Sessions <span id="personalSessionCount"></span></h2>
+        <div class="sessions-grid" id="personalSessionsGrid"></div>
+      </section>
+    </div>
+
+    <!-- Team View -->
+    <div class="view-container" id="teamView">
+      <div class="stats-row" id="teamStats"></div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <h2 class="section-title">Contribution</h2>
+          <div class="donut-container">
+            <div class="donut-chart" id="donutChart"></div>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h2 class="section-title">Sessions by Author</h2>
+          <div class="bar-chart" id="barChart"></div>
+        </div>
+      </div>
+
+      <section class="timeline-section">
+        <h2 class="section-title">Team Timeline</h2>
+        <div class="timeline-container">
+          <div class="timeline" id="teamTimeline"></div>
+        </div>
+      </section>
+
+      <section class="sessions-section">
+        <h2 class="section-title">All Sessions <span id="teamSessionCount"></span></h2>
+        <div class="sessions-grid" id="teamSessionsGrid"></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip" style="display: none;"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- Resume Modal -->
+  <div class="modal-overlay" id="resumeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Resume Session</h3>
+        <button class="modal-close" onclick="closeModal('resumeModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
+          Run this command in your terminal:
+        </p>
+        <div class="resume-command" id="resumeCommand">claude --resume session-id</div>
+        <p style="color: var(--text-muted); font-size: 12px;">
+          Or use <code>/session resume &lt;id&gt;</code> in Claude Code
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeModal('resumeModal')">Close</button>
+        <button class="btn btn-primary" onclick="copyResumeCommand()">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== DETAILED MOCK DATA ==========
+    const SESSION_DATA = [
+      {
+        sessionId: "a1b2c3d4-1111-2222-3333-444455556666",
+        topic: "jwt-authentication",
+        savedBy: "alice",
+        createdAt: "2026-01-14T09:00:00Z",
+        savedAt: "2026-01-14T12:30:00Z",
+        messageCount: 65,
+        todos: 2,
+        relatedSessions: ["b2c3d4e5-2222-3333-4444-555566667777"]
+      },
+      {
+        sessionId: "b2c3d4e5-2222-3333-4444-555566667777",
+        topic: "api-rate-limiting",
+        savedBy: "bob",
+        createdAt: "2026-01-14T14:00:00Z",
+        savedAt: "2026-01-14T17:00:00Z",
+        messageCount: 48,
+        todos: 0,
+        relatedSessions: []
+      },
+      {
+        sessionId: "c3d4e5f6-3333-4444-5555-666677778888",
+        topic: "database-indexing",
+        savedBy: "alice",
+        createdAt: "2026-01-15T10:00:00Z",
+        savedAt: "2026-01-15T14:00:00Z",
+        messageCount: 82,
+        todos: 3,
+        relatedSessions: []
+      },
+      {
+        sessionId: "d4e5f6g7-4444-5555-6666-777788889999",
+        topic: "react-modal-component",
+        savedBy: "carol",
+        createdAt: "2026-01-15T11:00:00Z",
+        savedAt: "2026-01-15T13:30:00Z",
+        messageCount: 35,
+        todos: 1,
+        relatedSessions: []
+      },
+      {
+        sessionId: "e5f6g7h8-5555-6666-7777-888899990000",
+        topic: "jest-testing-setup",
+        savedBy: "bob",
+        createdAt: "2026-01-16T09:30:00Z",
+        savedAt: "2026-01-16T11:30:00Z",
+        messageCount: 42,
+        todos: 0,
+        relatedSessions: []
+      },
+      {
+        sessionId: "f6g7h8i9-6666-7777-8888-999900001111",
+        topic: "stripe-payment-integration",
+        savedBy: "alice",
+        createdAt: "2026-01-16T14:00:00Z",
+        savedAt: "2026-01-16T18:00:00Z",
+        messageCount: 95,
+        todos: 5,
+        relatedSessions: []
+      },
+      {
+        sessionId: "g7h8i9j0-7777-8888-9999-000011112222",
+        topic: "github-actions-ci",
+        savedBy: "david",
+        createdAt: "2026-01-17T08:00:00Z",
+        savedAt: "2026-01-17T10:30:00Z",
+        messageCount: 28,
+        todos: 0,
+        relatedSessions: []
+      },
+      {
+        sessionId: "h8i9j0k1-8888-9999-0000-111122223333",
+        topic: "tailwind-responsive",
+        savedBy: "carol",
+        createdAt: "2026-01-17T13:00:00Z",
+        savedAt: "2026-01-17T16:00:00Z",
+        messageCount: 55,
+        todos: 2,
+        relatedSessions: ["d4e5f6g7-4444-5555-6666-777788889999"]
+      },
+      {
+        sessionId: "i9j0k1l2-9999-0000-1111-222233334444",
+        topic: "elasticsearch-integration",
+        savedBy: "alice",
+        createdAt: "2026-01-18T09:00:00Z",
+        savedAt: "2026-01-18T12:00:00Z",
+        messageCount: 72,
+        todos: 4,
+        relatedSessions: ["c3d4e5f6-3333-4444-5555-666677778888"]
+      },
+      {
+        sessionId: "j0k1l2m3-0000-1111-2222-333344445555",
+        topic: "websocket-notifications",
+        savedBy: "bob",
+        createdAt: "2026-01-18T10:00:00Z",
+        savedAt: "2026-01-18T14:30:00Z",
+        messageCount: 88,
+        todos: 3,
+        relatedSessions: []
+      },
+      {
+        sessionId: "k1l2m3n4-1111-2222-3333-444455556666",
+        topic: "redis-caching",
+        savedBy: "david",
+        createdAt: "2026-01-18T14:00:00Z",
+        savedAt: "2026-01-18T16:00:00Z",
+        messageCount: 38,
+        todos: 1,
+        relatedSessions: []
+      },
+      {
+        sessionId: "l2m3n4o5-2222-3333-4444-555566667777",
+        topic: "analytics-dashboard",
+        savedBy: "alice",
+        createdAt: "2026-01-19T08:30:00Z",
+        savedAt: "2026-01-19T11:30:00Z",
+        messageCount: 52,
+        todos: 2,
+        relatedSessions: []
+      },
+      {
+        sessionId: "m3n4o5p6-3333-4444-5555-666677778888",
+        topic: "security-audit-xss",
+        savedBy: "carol",
+        createdAt: "2026-01-19T09:00:00Z",
+        savedAt: "2026-01-19T12:30:00Z",
+        messageCount: 67,
+        todos: 6,
+        relatedSessions: []
+      },
+      {
+        sessionId: "n4o5p6q7-4444-5555-6666-777788889999",
+        topic: "openapi-documentation",
+        savedBy: "bob",
+        createdAt: "2026-01-19T13:00:00Z",
+        savedAt: "2026-01-19T15:00:00Z",
+        messageCount: 32,
+        todos: 0,
+        relatedSessions: ["b2c3d4e5-2222-3333-4444-555566667777"]
+      },
+      {
+        sessionId: "o5p6q7r8-5555-6666-7777-888899990000",
+        topic: "docker-optimization",
+        savedBy: "david",
+        createdAt: "2026-01-19T14:30:00Z",
+        savedAt: "2026-01-19T17:30:00Z",
+        messageCount: 78,
+        todos: 2,
+        relatedSessions: ["g7h8i9j0-7777-8888-9999-000011112222"]
+      }
+    ];
+
+    // Detailed file contents for sessions
+    const FILE_CONTENTS = {
+      "a1b2c3d4-1111-2222-3333-444455556666": {
+        summary: `## Session Summary
+**Topic:** JWT Authentication System
+**Duration:** 3h 30m | **Messages:** 65
+
+## Key Accomplishments
+- Implemented JWT-based authentication with access/refresh tokens
+- Created auth middleware for protected routes
+- Added token refresh endpoint with rotation
+- Set up secure HTTP-only cookie storage
+
+## Files Modified
++ src/auth/jwt.service.ts (new, 145 lines)
++ src/auth/auth.controller.ts (+67 lines)
+~ src/middleware/auth.middleware.ts (modified)
++ src/types/auth.types.ts (new)
+
+## Next Steps
+- [ ] Implement token blacklist for logout
+- [ ] Add rate limiting to auth endpoints`,
+        conversation: `## Conversation
+
+<span class="msg-user">User (09:00)</span>
+<div class="msg-content">로그인 API에 JWT 인증을 추가해야 해. access token과 refresh token 둘 다 필요해.</div>
+
+<span class="msg-assistant">Assistant (09:02)</span>
+<div class="msg-content">JWT 인증 시스템을 구현하겠습니다. 다음과 같은 구조로 진행할게요:
+
+1. Access Token: 15분 만료, 메모리/헤더 저장
+2. Refresh Token: 7일 만료, HTTP-only 쿠키 저장
+3. Token Rotation: refresh 시 새 refresh token 발급
+
+먼저 jwt.service.ts를 생성하겠습니다.</div>
+
+<span class="msg-user">User (09:15)</span>
+<div class="msg-content">좋아. 보안을 위해 refresh token rotation도 구현해줘.</div>
+
+<span class="msg-assistant">Assistant (09:18)</span>
+<div class="msg-content">Token rotation을 추가했습니다. refresh 요청 시:
+- 기존 refresh token 무효화
+- 새 access + refresh token 쌍 발급
+- 이전 토큰 재사용 시도 감지 → 모든 세션 무효화
+
+<code>src/auth/jwt.service.ts</code>에 구현 완료했습니다.</div>
+
+<span class="msg-user">User (10:30)</span>
+<div class="msg-content">미들웨어도 만들어서 protected route에 적용해줘.</div>
+
+<span class="msg-assistant">Assistant (10:35)</span>
+<div class="msg-content">인증 미들웨어를 생성했습니다:
+
+- <code>requireAuth</code>: 인증 필수
+- <code>optionalAuth</code>: 인증 선택적
+- 자동 토큰 갱신 로직 포함
+
+<code>src/middleware/auth.middleware.ts</code>에 적용했습니다.</div>`
+      },
+      "f6g7h8i9-6666-7777-8888-999900001111": {
+        summary: `## Session Summary
+**Topic:** Stripe Payment Integration
+**Duration:** 4h | **Messages:** 95
+
+## Key Accomplishments
+- Integrated Stripe SDK for payment processing
+- Created checkout session flow
+- Implemented webhook handlers for payment events
+- Added subscription management endpoints
+
+## Files Modified
++ src/payments/stripe.service.ts (new, 234 lines)
++ src/payments/payment.controller.ts (new, 156 lines)
++ src/payments/webhook.handler.ts (new, 89 lines)
+~ src/config/env.ts (+12 lines)
++ src/types/payment.types.ts (new)
+
+## Next Steps
+- [ ] Add payment retry logic
+- [ ] Implement refund endpoint
+- [ ] Add invoice generation
+- [ ] Set up Stripe test mode
+- [ ] Create payment analytics dashboard`,
+        conversation: `## Conversation
+
+<span class="msg-user">User (14:00)</span>
+<div class="msg-content">Stripe 결제 연동을 해야 해. 일회성 결제와 구독 결제 둘 다 지원해야 해.</div>
+
+<span class="msg-assistant">Assistant (14:05)</span>
+<div class="msg-content">Stripe 결제 시스템을 구현하겠습니다. 구조:
+
+**일회성 결제:**
+- Checkout Session 방식
+- PaymentIntent로 결제 처리
+- 결제 완료 후 webhook으로 확인
+
+**구독 결제:**
+- Stripe Customer 생성
+- Subscription 관리
+- 결제 실패 시 자동 재시도
+
+먼저 환경 설정부터 하겠습니다.</div>
+
+<span class="msg-user">User (14:30)</span>
+<div class="msg-content">webhook 보안도 신경 써줘. signature 검증 꼭 해야 해.</div>
+
+<span class="msg-assistant">Assistant (14:35)</span>
+<div class="msg-content">Webhook 보안을 강화했습니다:
+
+1. Stripe Signature 검증 (STRIPE_WEBHOOK_SECRET)
+2. Idempotency key로 중복 처리 방지
+3. 실패 시 재시도 로직 (exponential backoff)
+4. 모든 이벤트 로깅
+
+<code>src/payments/webhook.handler.ts</code>에 구현했습니다.</div>
+
+<span class="msg-user">User (16:00)</span>
+<div class="msg-content">테스트 모드에서 잘 동작하는지 확인해줘.</div>
+
+<span class="msg-assistant">Assistant (16:10)</span>
+<div class="msg-content">테스트 완료했습니다:
+
+- Checkout Session 생성: OK
+- 테스트 카드 (4242...) 결제: OK
+- Webhook 수신: OK
+- 구독 생성/취소: OK
+
+프로덕션 전환 시 API 키만 변경하면 됩니다.</div>`
+      },
+      "m3n4o5p6-3333-4444-5555-666677778888": {
+        summary: `## Session Summary
+**Topic:** Security Audit - XSS Prevention
+**Duration:** 3h 30m | **Messages:** 67
+
+## Key Accomplishments
+- Conducted comprehensive XSS vulnerability audit
+- Fixed 8 XSS vulnerabilities in frontend
+- Implemented Content Security Policy headers
+- Added input sanitization middleware
+
+## Vulnerabilities Found & Fixed
+1. Reflected XSS in search query - FIXED
+2. Stored XSS in user comments - FIXED
+3. DOM-based XSS in URL params - FIXED
+4. Missing CSP headers - FIXED
+5. Unsanitized markdown rendering - FIXED
+
+## Files Modified
+~ src/middleware/security.ts (+45 lines)
+~ src/utils/sanitize.ts (new, 67 lines)
+~ src/components/Comment.tsx (modified)
+~ src/components/SearchResults.tsx (modified)
+~ next.config.js (+CSP headers)
+
+## Next Steps
+- [ ] Implement rate limiting
+- [ ] Add SQL injection audit
+- [ ] Set up security headers audit
+- [ ] Configure CORS properly
+- [ ] Add penetration testing
+- [ ] Review authentication flow`,
+        conversation: `## Conversation
+
+<span class="msg-user">User (09:00)</span>
+<div class="msg-content">프론트엔드 XSS 취약점 점검해줘. 사용자 입력이 들어가는 모든 곳 확인해야 해.</div>
+
+<span class="msg-assistant">Assistant (09:10)</span>
+<div class="msg-content">XSS 취약점 스캔을 시작합니다. 점검 항목:
+
+1. 검색 결과 표시
+2. 사용자 댓글/리뷰
+3. 프로필 정보 표시
+4. URL 파라미터 처리
+5. 마크다운 렌더링
+
+각 영역을 순차적으로 확인하겠습니다.</div>
+
+<span class="msg-user">User (09:45)</span>
+<div class="msg-content">발견된 취약점 목록 정리해줘.</div>
+
+<span class="msg-assistant">Assistant (09:50)</span>
+<div class="msg-content">**발견된 XSS 취약점:**
+
+1. <code>SearchResults.tsx</code>: 검색어가 innerHTML로 직접 삽입됨
+2. <code>Comment.tsx</code>: dangerouslySetInnerHTML 사용
+3. <code>Profile.tsx</code>: bio 필드 미이스케이프
+4. URL params가 직접 DOM에 반영됨
+
+모두 HIGH 위험도입니다. 수정하겠습니다.</div>
+
+<span class="msg-user">User (11:00)</span>
+<div class="msg-content">CSP 헤더도 추가해줘.</div>
+
+<span class="msg-assistant">Assistant (11:15)</span>
+<div class="msg-content">Content Security Policy를 설정했습니다:
+
+- <code>default-src 'self'</code>
+- <code>script-src 'self' 'unsafe-inline'</code> (추후 nonce로 교체 예정)
+- <code>style-src 'self' 'unsafe-inline'</code>
+- <code>img-src 'self' data: https:</code>
+- <code>frame-ancestors 'none'</code>
+
+<code>next.config.js</code>에 적용했습니다.</div>`
+      }
+    };
+
+    // ========== STATE ==========
+    const COLORS = ['blue', 'green', 'purple', 'orange', 'red', 'cyan'];
+    const COLOR_VALUES = {
+      blue: '#58a6ff', green: '#3fb950', purple: '#a371f7',
+      orange: '#d29922', red: '#f85149', cyan: '#39c5cf'
+    };
+    const authorColors = {};
+    let currentView = 'personal';
+    let currentUser = 'alice';
+    let currentResumeId = '';
+
+    // ========== UTILITIES ==========
+    function getAuthorColor(author) {
+      if (!authorColors[author]) {
+        const idx = Object.keys(authorColors).length % COLORS.length;
+        authorColors[author] = COLORS[idx];
+      }
+      return authorColors[author];
+    }
+
+    function parseDate(str) { return new Date(str); }
+
+    function formatDuration(ms) {
+      const hours = Math.floor(ms / (1000 * 60 * 60));
+      const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+      if (hours > 0) return `${hours}h ${mins}m`;
+      return `${mins}m`;
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function getSessionDuration(session) {
+      return parseDate(session.savedAt) - parseDate(session.createdAt);
+    }
+
+    function getAvgDuration() {
+      const total = SESSION_DATA.reduce((sum, s) => sum + getSessionDuration(s), 0);
+      return total / SESSION_DATA.length;
+    }
+
+    // ========== VIEW SWITCHING ==========
+    function switchView(view) {
+      currentView = view;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelector(`.tab[onclick="switchView('${view}')"]`).classList.add('active');
+
+      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+      document.getElementById(`${view}View`).classList.add('active');
+
+      document.getElementById('userSelector').style.display = view === 'personal' ? 'flex' : 'none';
+
+      renderView();
+    }
+
+    function onUserChange() {
+      currentUser = document.getElementById('currentUser').value;
+      renderView();
+    }
+
+    function renderView() {
+      renderInsights();
+      if (currentView === 'personal') {
+        renderPersonalView();
+      } else {
+        renderTeamView();
+      }
+    }
+
+    // ========== INSIGHTS ==========
+    function generateInsights() {
+      const insights = [];
+      const sessions = currentView === 'personal'
+        ? SESSION_DATA.filter(s => s.savedBy === currentUser)
+        : SESSION_DATA;
+
+      // Most active area
+      const topicGroups = {};
+      sessions.forEach(s => {
+        const base = s.topic.split('-')[0];
+        topicGroups[base] = (topicGroups[base] || 0) + 1;
+      });
+      const topArea = Object.entries(topicGroups).sort((a, b) => b[1] - a[1])[0];
+      if (topArea) {
+        insights.push({
+          icon: '&#128200;', color: 'blue',
+          title: 'Most Active Area',
+          value: `${topArea[0]} (${topArea[1]} sessions)`
+        });
+      }
+
+      // Longest session
+      const longest = sessions.reduce((max, s) =>
+        getSessionDuration(s) > getSessionDuration(max) ? s : max, sessions[0]);
+      if (longest) {
+        insights.push({
+          icon: '&#9203;', color: 'purple',
+          title: 'Longest Session',
+          value: `${longest.topic} (${formatDuration(getSessionDuration(longest))})`
+        });
+      }
+
+      // Pending TODOs
+      const totalTodos = sessions.reduce((sum, s) => sum + (s.todos || 0), 0);
+      if (totalTodos > 0) {
+        insights.push({
+          icon: '&#9745;', color: 'orange',
+          title: 'Pending TODOs',
+          value: `${totalTodos} items across ${sessions.filter(s => s.todos > 0).length} sessions`
+        });
+      }
+
+      // Team specific
+      if (currentView === 'team') {
+        const authorMsgs = {};
+        sessions.forEach(s => {
+          authorMsgs[s.savedBy] = (authorMsgs[s.savedBy] || 0) + s.messageCount;
+        });
+        const topAuthor = Object.entries(authorMsgs).sort((a, b) => b[1] - a[1])[0];
+        const totalMsgs = Object.values(authorMsgs).reduce((a, b) => a + b, 0);
+        if (topAuthor) {
+          const pct = Math.round((topAuthor[1] / totalMsgs) * 100);
+          insights.push({
+            icon: '&#128081;', color: 'green',
+            title: 'Top Contributor',
+            value: `${topAuthor[0]} (${pct}% of messages)`
+          });
+        }
+      }
+
+      return insights;
+    }
+
+    function renderInsights() {
+      const insights = generateInsights();
+      document.getElementById('insightsGrid').innerHTML = insights.map(i => `
+        <div class="insight-card">
+          <div class="insight-icon ${i.color}">${i.icon}</div>
+          <div class="insight-content">
+            <div class="insight-title">${i.title}</div>
+            <div class="insight-value">${i.value}</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========== PERSONAL VIEW ==========
+    function renderPersonalView() {
+      const mySessions = SESSION_DATA.filter(s => s.savedBy === currentUser);
+      const totalMsgs = mySessions.reduce((sum, s) => sum + s.messageCount, 0);
+      const totalDuration = mySessions.reduce((sum, s) => sum + getSessionDuration(s), 0);
+      const avgDuration = mySessions.length > 0 ? totalDuration / mySessions.length : 0;
+      const globalAvg = getAvgDuration();
+      const durationDiff = avgDuration > 0 ? Math.round(((avgDuration - globalAvg) / globalAvg) * 100) : 0;
+
+      document.getElementById('personalStats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">My Sessions</div>
+          <div class="stat-value">${mySessions.length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Messages</div>
+          <div class="stat-value">${totalMsgs.toLocaleString()}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Time</div>
+          <div class="stat-value">${formatDuration(totalDuration)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Session</div>
+          <div class="stat-value">${formatDuration(avgDuration)}</div>
+          <div class="stat-change ${durationDiff >= 0 ? 'positive' : 'negative'}">
+            ${durationDiff >= 0 ? '+' : ''}${durationDiff}% vs team avg
+          </div>
+        </div>
+      `;
+
+      renderHeatmap(mySessions);
+      renderSessionCards(mySessions, 'personalSessionsGrid', 'personalSessionCount');
+    }
+
+    function renderHeatmap(sessions) {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const hourCounts = {};
+
+      sessions.forEach(s => {
+        const date = parseDate(s.createdAt);
+        const day = date.getDay();
+        const hour = date.getHours();
+        const key = `${day}-${hour}`;
+        hourCounts[key] = (hourCounts[key] || 0) + 1;
+      });
+
+      const maxCount = Math.max(...Object.values(hourCounts), 1);
+
+      // Header (hours)
+      let headerHtml = '<div class="heatmap-header">';
+      for (let h = 6; h < 22; h++) {
+        headerHtml += `<span>${h % 12 || 12}${h < 12 ? 'a' : 'p'}</span>`;
+      }
+      headerHtml += '</div>';
+
+      let rowsHtml = '';
+      days.forEach((day, dayIdx) => {
+        let cells = '';
+        for (let h = 6; h < 22; h++) {
+          const count = hourCounts[`${dayIdx}-${h}`] || 0;
+          const level = count === 0 ? 0 : Math.min(Math.ceil((count / maxCount) * 4), 4);
+          cells += `<div class="heatmap-cell" data-level="${level}"
+            title="${day} ${h}:00 - ${count} session(s)"></div>`;
+        }
+        rowsHtml += `
+          <div class="heatmap-row">
+            <div class="heatmap-label">${day}</div>
+            <div class="heatmap-cells">${cells}</div>
+          </div>
+        `;
+      });
+
+      document.getElementById('heatmap').innerHTML = headerHtml + rowsHtml;
+    }
+
+    // ========== TEAM VIEW ==========
+    function renderTeamView() {
+      const authors = [...new Set(SESSION_DATA.map(s => s.savedBy))];
+      const totalMsgs = SESSION_DATA.reduce((sum, s) => sum + s.messageCount, 0);
+      const totalDuration = SESSION_DATA.reduce((sum, s) => sum + getSessionDuration(s), 0);
+
+      document.getElementById('teamStats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Total Sessions</div>
+          <div class="stat-value">${SESSION_DATA.length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Team Members</div>
+          <div class="stat-value">${authors.length}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Messages</div>
+          <div class="stat-value">${totalMsgs.toLocaleString()}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Time</div>
+          <div class="stat-value">${formatDuration(totalDuration)}</div>
+        </div>
+      `;
+
+      renderDonutChart();
+      renderBarChart();
+      renderTeamTimeline();
+      renderSessionCards(SESSION_DATA, 'teamSessionsGrid', 'teamSessionCount');
+    }
+
+    function renderDonutChart() {
+      const authorMsgs = {};
+      SESSION_DATA.forEach(s => {
+        authorMsgs[s.savedBy] = (authorMsgs[s.savedBy] || 0) + s.messageCount;
+      });
+      const total = Object.values(authorMsgs).reduce((a, b) => a + b, 0);
+      const entries = Object.entries(authorMsgs).sort((a, b) => b[1] - a[1]);
+
+      const size = 180;
+      const strokeWidth = 30;
+      const radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+
+      let offset = 0;
+      let paths = '';
+      let legendHtml = '';
+
+      entries.forEach(([author, count]) => {
+        const pct = count / total;
+        const color = COLOR_VALUES[getAuthorColor(author)];
+        const dashLength = pct * circumference;
+        const dashOffset = -offset;
+
+        paths += `<circle cx="${size/2}" cy="${size/2}" r="${radius}"
+          fill="none" stroke="${color}" stroke-width="${strokeWidth}"
+          stroke-dasharray="${dashLength} ${circumference}"
+          stroke-dashoffset="${dashOffset}"/>`;
+
+        legendHtml += `
+          <div class="legend-item">
+            <div class="legend-dot" style="background:${color}"></div>
+            ${author} (${Math.round(pct * 100)}%)
+          </div>
+        `;
+
+        offset += dashLength;
+      });
+
+      document.getElementById('donutChart').innerHTML = `
+        <svg width="${size}" height="${size}">${paths}</svg>
+        <div class="donut-center">
+          <div class="value">${total}</div>
+          <div class="label">messages</div>
+        </div>
+      `;
+      document.getElementById('donutLegend').innerHTML = legendHtml;
+    }
+
+    function renderBarChart() {
+      const authorSessions = {};
+      SESSION_DATA.forEach(s => {
+        authorSessions[s.savedBy] = (authorSessions[s.savedBy] || 0) + 1;
+      });
+      const maxSessions = Math.max(...Object.values(authorSessions));
+      const entries = Object.entries(authorSessions).sort((a, b) => b[1] - a[1]);
+
+      document.getElementById('barChart').innerHTML = entries.map(([author, count]) => {
+        const color = COLOR_VALUES[getAuthorColor(author)];
+        const pct = (count / maxSessions) * 100;
+        return `
+          <div class="bar-item">
+            <div class="bar-label">${author}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${pct}%;background:${color}">${count}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTeamTimeline() {
+      const authors = [...new Set(SESSION_DATA.map(s => s.savedBy))];
+      const minDate = Math.min(...SESSION_DATA.map(s => parseDate(s.createdAt).getTime()));
+      const maxDate = Math.max(...SESSION_DATA.map(s => parseDate(s.savedAt).getTime()));
+      const range = maxDate - minDate || 1;
+
+      const dayCount = Math.ceil(range / (24 * 60 * 60 * 1000)) || 1;
+      const labelCount = Math.min(dayCount, 7);
+      const labelStep = range / labelCount;
+
+      let headerHtml = '<div class="timeline-header">';
+      for (let i = 0; i <= labelCount; i++) {
+        headerHtml += `<span>${formatDate(new Date(minDate + i * labelStep))}</span>`;
+      }
+      headerHtml += '</div>';
+
+      let rowsHtml = '';
+      authors.forEach(author => {
+        const authorSessions = SESSION_DATA.filter(s => s.savedBy === author);
+        const color = getAuthorColor(author);
+        const colorValue = COLOR_VALUES[color];
+
+        let barsHtml = '';
+        authorSessions.forEach(s => {
+          const start = parseDate(s.createdAt).getTime();
+          const end = parseDate(s.savedAt).getTime();
+          const left = ((start - minDate) / range) * 100;
+          const width = Math.max(((end - start) / range) * 100, 2);
+
+          barsHtml += `<div class="timeline-bar" style="left:${left}%;width:${width}%;background:${colorValue}"
+            data-session='${JSON.stringify(s).replace(/'/g, "&#39;")}'
+            onmouseenter="showTooltip(event, this)"
+            onmouseleave="hideTooltip()"
+            onclick="scrollToSession('${s.sessionId}')">${s.topic}</div>`;
+        });
+
+        rowsHtml += `
+          <div class="timeline-row">
+            <div class="timeline-author">
+              <div class="timeline-avatar" style="background:${colorValue}">${author[0].toUpperCase()}</div>
+              ${author}
+            </div>
+            <div class="timeline-bars">${barsHtml}</div>
+          </div>
+        `;
+      });
+
+      document.getElementById('teamTimeline').innerHTML = headerHtml + rowsHtml;
+    }
+
+    // ========== SESSION CARDS ==========
+    function generateSessionInsight(session) {
+      const avgDuration = getAvgDuration();
+      const duration = getSessionDuration(session);
+      const insights = [];
+
+      if (duration > avgDuration * 1.5) {
+        const diff = Math.round(((duration - avgDuration) / avgDuration) * 100);
+        insights.push(`${diff}% longer than average`);
+      }
+
+      if (session.todos > 3) {
+        insights.push(`${session.todos} pending TODOs`);
+      }
+
+      if (session.relatedSessions && session.relatedSessions.length > 0) {
+        insights.push(`${session.relatedSessions.length} related session(s)`);
+      }
+
+      return insights.length > 0 ? insights.join(' • ') : null;
+    }
+
+    function renderSessionCards(sessions, gridId, countId) {
+      const sorted = [...sessions].sort((a, b) => parseDate(b.createdAt) - parseDate(a.createdAt));
+      document.getElementById(countId).textContent = `(${sessions.length})`;
+
+      document.getElementById(gridId).innerHTML = sorted.map(s => {
+        const created = parseDate(s.createdAt);
+        const duration = formatDuration(getSessionDuration(s));
+        const color = getAuthorColor(s.savedBy);
+        const colorValue = COLOR_VALUES[color];
+        const shortId = s.sessionId.substring(0, 8);
+        const insight = generateSessionInsight(s);
+
+        return `
+          <div class="session-card" id="session-${s.sessionId}">
+            <div class="session-header">
+              <div>
+                <div class="session-topic">${escapeHtml(s.topic)}</div>
+                <div class="session-id">${shortId}</div>
+              </div>
+              <span class="author-badge" style="background:${colorValue}20;color:${colorValue}">${s.savedBy}</span>
+            </div>
+            <div class="session-meta">
+              <span>${created.toLocaleDateString('ko-KR')}</span>
+              <span>${created.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'})}</span>
+              <span>${duration}</span>
+              <span>${s.messageCount} msgs</span>
+              ${s.todos > 0 ? `<span style="color:var(--accent-orange)">${s.todos} TODOs</span>` : ''}
+            </div>
+            ${insight ? `<div class="session-insight">&#128161; ${insight}</div>` : ''}
+            <div class="session-actions">
+              <button class="btn" onclick="togglePreview('${s.sessionId}', 'summary')">Summary</button>
+              <button class="btn" onclick="togglePreview('${s.sessionId}', 'conversation')">Chat</button>
+              <button class="btn btn-primary" onclick="showResumeModal('${s.sessionId}')">Resume</button>
+            </div>
+            <div class="session-preview" id="preview-${s.sessionId}">
+              <div class="preview-header">
+                <span class="preview-title" id="preview-title-${s.sessionId}">Summary</span>
+                <button class="btn btn-small" onclick="closePreview('${s.sessionId}')">Close</button>
+              </div>
+              <div class="preview-content" id="preview-content-${s.sessionId}"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePreview(sessionId, type) {
+      const preview = document.getElementById(`preview-${sessionId}`);
+      const titleEl = document.getElementById(`preview-title-${sessionId}`);
+      const isShown = preview.classList.contains('show');
+      const currentType = preview.dataset.currentType;
+
+      if (isShown && currentType === type) {
+        closePreview(sessionId);
+        return;
+      }
+
+      document.querySelectorAll('.session-preview.show').forEach(p => {
+        if (p.id !== `preview-${sessionId}`) {
+          p.classList.remove('show');
+          p.closest('.session-card').classList.remove('expanded');
+        }
+      });
+
+      preview.classList.add('show');
+      preview.closest('.session-card').classList.add('expanded');
+      preview.dataset.currentType = type;
+      titleEl.textContent = type === 'summary' ? 'Summary' : 'Conversation';
+      loadPreviewContent(sessionId, type);
+    }
+
+    function closePreview(sessionId) {
+      const preview = document.getElementById(`preview-${sessionId}`);
+      preview.classList.remove('show');
+      preview.closest('.session-card').classList.remove('expanded');
+    }
+
+    function loadPreviewContent(sessionId, type) {
+      const contentEl = document.getElementById(`preview-content-${sessionId}`);
+      const session = SESSION_DATA.find(s => s.sessionId === sessionId);
+
+      if (FILE_CONTENTS[sessionId] && FILE_CONTENTS[sessionId][type]) {
+        contentEl.innerHTML = formatPreviewContent(FILE_CONTENTS[sessionId][type]);
+      } else {
+        contentEl.innerHTML = generateMockContent(session, type);
+      }
+    }
+
+    function formatPreviewContent(content) {
+      let html = content;
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/^- \[ \] (.+)$/gm, '<li style="color:var(--accent-orange)">&#9744; $1</li>');
+      html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+      html = html.replace(/\+ (.+\.ts.*)$/gm, '<div class="file-change file-add">+ $1</div>');
+      html = html.replace(/~ (.+\.ts.*)$/gm, '<div class="file-change file-mod">~ $1</div>');
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      return html;
+    }
+
+    function generateMockContent(session, type) {
+      if (type === 'summary') {
+        return `<h2>Session Summary</h2>
+<strong>Topic:</strong> ${escapeHtml(session.topic)}
+<strong>Duration:</strong> ${formatDuration(getSessionDuration(session))}
+<strong>Messages:</strong> ${session.messageCount}
+
+<h2>Key Accomplishments</h2>
+<ul>
+<li>Implemented core functionality</li>
+<li>Added error handling</li>
+<li>Wrote unit tests</li>
+</ul>
+
+${session.todos > 0 ? `<h2>Pending TODOs</h2>
+<ul>
+${Array(session.todos).fill(0).map((_, i) => `<li style="color:var(--accent-orange)">&#9744; TODO item ${i+1}</li>`).join('\n')}
+</ul>` : ''}
+
+<em style="color:var(--text-muted)">Full summary available in .summary.md</em>`;
+      } else {
+        return `<h2>Conversation Preview</h2>
+
+<span class="msg-user">User</span>
+<div class="msg-content">${session.topic} 기능 구현해줘.</div>
+
+<span class="msg-assistant">Assistant</span>
+<div class="msg-content">네, ${session.topic} 구현을 시작하겠습니다...</div>
+
+<em style="color:var(--text-muted)">Full conversation (${session.messageCount} messages) available in .conversation.md</em>`;
+      }
+    }
+
+    // ========== MODALS & UTILITIES ==========
+    function showResumeModal(sessionId) {
+      currentResumeId = sessionId;
+      document.getElementById('resumeCommand').textContent = `claude --resume ${sessionId}`;
+      document.getElementById('resumeModal').classList.add('show');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('show');
+    }
+
+    function copyResumeCommand() {
+      navigator.clipboard.writeText(`claude --resume ${currentResumeId}`).then(() => {
+        showToast('Command copied!');
+        closeModal('resumeModal');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function showTooltip(event, el) {
+      const s = JSON.parse(el.dataset.session.replace(/&#39;/g, "'"));
+      const tooltip = document.getElementById('tooltip');
+      tooltip.innerHTML = `
+        <strong>${escapeHtml(s.topic)}</strong><br>
+        ${s.savedBy} • ${formatDuration(getSessionDuration(s))} • ${s.messageCount} msgs
+      `;
+      tooltip.style.display = 'block';
+      tooltip.style.left = Math.min(event.pageX + 10, window.innerWidth - 200) + 'px';
+      tooltip.style.top = event.pageY + 10 + 'px';
+    }
+
+    function hideTooltip() {
+      document.getElementById('tooltip').style.display = 'none';
+    }
+
+    function scrollToSession(id) {
+      const el = document.getElementById('session-' + id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.borderColor = 'var(--accent-blue)';
+        setTimeout(() => el.style.borderColor = '', 2000);
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+    }
+
+    function exportData() {
+      const data = currentView === 'personal'
+        ? SESSION_DATA.filter(s => s.savedBy === currentUser)
+        : SESSION_DATA;
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `sessions-${currentView}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ========== INIT ==========
+    function init() {
+      // Populate user selector
+      const authors = [...new Set(SESSION_DATA.map(s => s.savedBy))];
+      const select = document.getElementById('currentUser');
+      authors.forEach(author => {
+        const option = document.createElement('option');
+        option.value = author;
+        option.textContent = author;
+        if (author === currentUser) option.selected = true;
+        select.appendChild(option);
+      });
+
+      // Modal close on overlay click
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay) overlay.classList.remove('show');
+        });
+      });
+
+      renderView();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

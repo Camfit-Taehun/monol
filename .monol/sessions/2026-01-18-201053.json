@@ -1,0 +1,38 @@
+{
+  "id": "2026-01-18-201053",
+  "started": "2026-01-18T20:10:53+09:00",
+  "ended": "2026-01-18T20:10:59+09:00",
+  "status": "completed",
+  "branch": "master",
+  "worktree": "/Users/kent/Work/monol/monol-x",
+  "focus": "평가 테스트 2",
+  "template": "general",
+  "logs": [],
+  "commits": [],
+  "stats": {
+    "commands": 0,
+    "files_changed": 0,
+    "lines_added": 0,
+    "lines_removed": 0
+  },
+  "pipeline": {
+    "current_step": 0,
+    "total_steps": 1,
+    "strategy": "exploration_bonus",
+    "steps": [
+      {
+        "name": "execution",
+        "role": "developer",
+        "weight": 1,
+        "timeout": "30m",
+        "description": null,
+        "status": "completed",
+        "module": "",
+        "started_at": "2026-01-18T20:10:54+09:00",
+        "completed_at": "2026-01-18T20:10:54+09:00"
+      }
+    ],
+    "status": "completed"
+  },
+  "summary": "완료"
+}

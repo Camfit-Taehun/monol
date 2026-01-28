@@ -1,0 +1,6 @@
+
+# Archives with secrets
+claude-archives/
+
+# Data files
+*.csv

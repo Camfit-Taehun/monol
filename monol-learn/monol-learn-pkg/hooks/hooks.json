@@ -1,0 +1,12 @@
+{
+  "hooks": [
+    {
+      "event": "SessionEnd",
+      "script": "capture-learning-data.sh"
+    },
+    {
+      "event": "Notification",
+      "script": "scheduled-scan.sh"
+    }
+  ]
+}

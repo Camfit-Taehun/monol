@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rulebook Console - Mockup</title>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1a1a1a;
+      --border-color: #262626;
+      --text-primary: #fafafa;
+      --text-secondary: #a3a3a3;
+      --accent-orange: #f97316;
+      --accent-green: #22c55e;
+      --accent-yellow: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-blue: #3b82f6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+    }
+    .sidebar {
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 16px;
+    }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 16px;
+    }
+    .sidebar-header h1 {
+      font-size: 18px;
+      background: linear-gradient(90deg, var(--accent-orange), #f59e0b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .nav-section { margin-bottom: 20px; }
+    .nav-section h3 {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding: 0 8px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--bg-tertiary); }
+    .nav-item.active { background: var(--accent-orange); color: #000; }
+    .nav-count { margin-left: auto; font-size: 11px; opacity: 0.7; }
+    .severity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .severity-error { background: var(--accent-red); }
+    .severity-warning { background: var(--accent-yellow); }
+    .severity-info { background: var(--accent-blue); }
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .main-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .main-header h2 { font-size: 16px; }
+    .header-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-primary { background: var(--accent-orange); border-color: var(--accent-orange); color: #000; }
+    .toolbar {
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .search-box {
+      flex: 1;
+      max-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+    }
+    .search-box input {
+      flex: 1;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+    }
+    .filter-chips { display: flex; gap: 6px; }
+    .chip {
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .chip.active { background: var(--accent-orange); color: #000; border-color: var(--accent-orange); }
+    .rules-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 24px;
+    }
+    .rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .rule-item:hover { border-color: var(--accent-orange); }
+    .rule-severity {
+      width: 4px;
+      height: 100%;
+      min-height: 60px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .rule-content { flex: 1; }
+    .rule-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .rule-title { font-size: 14px; font-weight: 600; }
+    .rule-id {
+      font-size: 11px;
+      padding: 2px 6px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+    .rule-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+    .rule-meta { display: flex; gap: 16px; font-size: 11px; color: var(--text-secondary); }
+    .rule-actions { display: flex; gap: 6px; }
+    .action-btn {
+      padding: 6px 10px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .action-btn:hover { border-color: var(--accent-orange); }
+    .right-panel {
+      width: 300px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border-color);
+      padding: 16px;
+    }
+    .panel-section { margin-bottom: 20px; }
+    .panel-section h3 { font-size: 13px; margin-bottom: 12px; }
+    .sync-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sync-item:last-child { border-bottom: none; }
+    .sync-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .sync-info { flex: 1; }
+    .sync-name { font-size: 13px; font-weight: 500; }
+    .sync-file { font-size: 11px; color: var(--text-secondary); }
+    .sync-status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .status-synced { background: rgba(34, 197, 94, 0.2); color: var(--accent-green); }
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: var(--accent-yellow); }
+    .quick-actions { display: flex; flex-direction: column; gap: 8px; }
+    .quick-btn {
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quick-btn:hover { border-color: var(--accent-orange); }
+    .mockup-badge {
+      position: fixed;
+      bottom: 20px;
+      right: 320px;
+      background: var(--accent-orange);
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-size: 24px;">📖</span>
+      <h1>Rulebook</h1>
+    </div>
+
+    <div class="nav-section">
+      <h3>Categories</h3>
+      <div class="nav-item active">
+        <span>📁</span>
+        <span>All Rules</span>
+        <span class="nav-count">47</span>
+      </div>
+      <div class="nav-item">
+        <span>💻</span>
+        <span>Code</span>
+        <span class="nav-count">18</span>
+      </div>
+      <div class="nav-item">
+        <span>🔄</span>
+        <span>Workflow</span>
+        <span class="nav-count">12</span>
+      </div>
+      <div class="nav-item">
+        <span>🚀</span>
+        <span>Deploy</span>
+        <span class="nav-count">8</span>
+      </div>
+      <div class="nav-item">
+        <span>🔒</span>
+        <span>Security</span>
+        <span class="nav-count">5</span>
+      </div>
+      <div class="nav-item">
+        <span>📝</span>
+        <span>Documentation</span>
+        <span class="nav-count">4</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <h3>By Severity</h3>
+      <div class="nav-item">
+        <div class="severity-dot severity-error"></div>
+        <span>Error</span>
+        <span class="nav-count">12</span>
+      </div>
+      <div class="nav-item">
+        <div class="severity-dot severity-warning"></div>
+        <span>Warning</span>
+        <span class="nav-count">23</span>
+      </div>
+      <div class="nav-item">
+        <div class="severity-dot severity-info"></div>
+        <span>Info</span>
+        <span class="nav-count">12</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="main-header">
+      <h2>📖 All Rules</h2>
+      <div class="header-actions">
+        <button class="btn">📥 Import</button>
+        <button class="btn btn-primary">+ Add Rule</button>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" placeholder="Search rules...">
+      </div>
+      <div class="filter-chips">
+        <span class="chip active">All</span>
+        <span class="chip">🔴 Error</span>
+        <span class="chip">🟡 Warning</span>
+        <span class="chip">🔵 Info</span>
+      </div>
+    </div>
+
+    <div class="rules-list">
+      <div class="rule-item">
+        <div class="rule-severity severity-error"></div>
+        <div class="rule-content">
+          <div class="rule-header">
+            <span class="rule-title">No console.log in production</span>
+            <span class="rule-id">code-001</span>
+          </div>
+          <div class="rule-desc">Production 코드에서 console.log 사용 금지. 디버깅 로그는 logger 유틸리티 사용 필수.</div>
+          <div class="rule-meta">
+            <span>📁 code/javascript.yaml</span>
+            <span>🕐 Updated 2 days ago</span>
+          </div>
+        </div>
+        <div class="rule-actions">
+          <button class="action-btn">✏️</button>
+          <button class="action-btn">📋</button>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-severity severity-error"></div>
+        <div class="rule-content">
+          <div class="rule-header">
+            <span class="rule-title">Required code review</span>
+            <span class="rule-id">workflow-001</span>
+          </div>
+          <div class="rule-desc">모든 PR은 최소 1명의 리뷰어 승인 필요. main 브랜치 직접 푸시 금지.</div>
+          <div class="rule-meta">
+            <span>📁 workflow/review.yaml</span>
+            <span>🕐 Updated 1 week ago</span>
+          </div>
+        </div>
+        <div class="rule-actions">
+          <button class="action-btn">✏️</button>
+          <button class="action-btn">📋</button>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-severity severity-warning"></div>
+        <div class="rule-content">
+          <div class="rule-header">
+            <span class="rule-title">Use TypeScript strict mode</span>
+            <span class="rule-id">code-002</span>
+          </div>
+          <div class="rule-desc">tsconfig.json에서 strict 모드 활성화 권장. any 타입 사용 최소화.</div>
+          <div class="rule-meta">
+            <span>📁 code/typescript.yaml</span>
+            <span>🕐 Updated 3 days ago</span>
+          </div>
+        </div>
+        <div class="rule-actions">
+          <button class="action-btn">✏️</button>
+          <button class="action-btn">📋</button>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-severity severity-warning"></div>
+        <div class="rule-content">
+          <div class="rule-header">
+            <span class="rule-title">Maximum function length</span>
+            <span class="rule-id">code-003</span>
+          </div>
+          <div class="rule-desc">함수는 50줄 이하로 유지. 긴 함수는 작은 단위로 분리할 것.</div>
+          <div class="rule-meta">
+            <span>📁 code/general.yaml</span>
+            <span>🕐 Updated 5 days ago</span>
+          </div>
+        </div>
+        <div class="rule-actions">
+          <button class="action-btn">✏️</button>
+          <button class="action-btn">📋</button>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-severity severity-info"></div>
+        <div class="rule-content">
+          <div class="rule-header">
+            <span class="rule-title">Commit message format</span>
+            <span class="rule-id">workflow-002</span>
+          </div>
+          <div class="rule-desc">Conventional Commits 형식 사용: feat:, fix:, docs:, chore: 등</div>
+          <div class="rule-meta">
+            <span>📁 workflow/git.yaml</span>
+            <span>🕐 Updated 2 weeks ago</span>
+          </div>
+        </div>
+        <div class="rule-actions">
+          <button class="action-btn">✏️</button>
+          <button class="action-btn">📋</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <aside class="right-panel">
+    <div class="panel-section">
+      <h3>🔄 Sync Status</h3>
+      <div class="sync-item">
+        <div class="sync-icon" style="background: #6366f1;">🤖</div>
+        <div class="sync-info">
+          <div class="sync-name">Claude Code</div>
+          <div class="sync-file">CLAUDE.md</div>
+        </div>
+        <span class="sync-status status-synced">✓</span>
+      </div>
+      <div class="sync-item">
+        <div class="sync-icon" style="background: #22c55e;">📝</div>
+        <div class="sync-info">
+          <div class="sync-name">Cursor</div>
+          <div class="sync-file">.cursorrules</div>
+        </div>
+        <span class="sync-status status-synced">✓</span>
+      </div>
+      <div class="sync-item">
+        <div class="sync-icon" style="background: #f97316;">🧠</div>
+        <div class="sync-info">
+          <div class="sync-name">Windsurf</div>
+          <div class="sync-file">.windsurfrules</div>
+        </div>
+        <span class="sync-status status-pending">⏳</span>
+      </div>
+      <div class="sync-item">
+        <div class="sync-icon" style="background: #ec4899;">⚡</div>
+        <div class="sync-info">
+          <div class="sync-name">GitHub Copilot</div>
+          <div class="sync-file">copilot-instructions.md</div>
+        </div>
+        <span class="sync-status status-synced">✓</span>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <h3>⚡ Quick Actions</h3>
+      <div class="quick-actions">
+        <button class="quick-btn">
+          <span>🔄</span>
+          <span>Sync All Platforms</span>
+        </button>
+        <button class="quick-btn">
+          <span>📥</span>
+          <span>Import from Template</span>
+        </button>
+        <button class="quick-btn">
+          <span>📤</span>
+          <span>Export Rules</span>
+        </button>
+        <button class="quick-btn">
+          <span>🔍</span>
+          <span>Validate Rules</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="mockup-badge">🎨 MOCKUP</div>
+</body>
+</html>

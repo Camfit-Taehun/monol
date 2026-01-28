@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "events": [
+    {
+      "type": "mutate",
+      "source": "session-core",
+      "target": "session-v2",
+      "timestamp": "2026-01-18T22:52:24+09:00"
+    },
+    {
+      "type": "mutate",
+      "source": "session-v2",
+      "target": "session-v3",
+      "timestamp": "2026-01-18T22:53:13+09:00"
+    },
+    {
+      "type": "mutate",
+      "source": "session-core",
+      "target": "session-new",
+      "timestamp": "2026-01-18T23:03:33+09:00"
+    },
+    {
+      "type": "mutate",
+      "source": "session-new",
+      "target": "session-test",
+      "timestamp": "2026-01-18T23:03:44+09:00"
+    },
+    {
+      "type": "mutate",
+      "source": "session-core",
+      "target": "session-v2",
+      "timestamp": "2026-01-18T23:05:50+09:00"
+    },
+    {
+      "type": "mutate",
+      "source": "session-core",
+      "target": "session-v2",
+      "timestamp": "2026-01-18T23:15:03+09:00"
+    }
+  ]
+}

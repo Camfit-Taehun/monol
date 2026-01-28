@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monol Channels Analytics</title>
+    <!-- Monol Design System -->
+    <link rel="stylesheet" href="../../../monol-design/monol-design.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="spa-styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1>Monol Channels</h1>
+                <span class="version">Analytics v1.0</span>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#overview" class="nav-link active" data-view="overview">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Overview</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#timeline" class="nav-link" data-view="timeline">
+                        <span class="nav-icon">🔄</span>
+                        <span class="nav-text">Channel Flow</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#sessions" class="nav-link" data-view="sessions">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Sessions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#decisions" class="nav-link" data-view="decisions">
+                        <span class="nav-icon">🎯</span>
+                        <span class="nav-text">Decisions</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#search" class="nav-link" data-view="search">
+                        <span class="nav-icon">🔍</span>
+                        <span class="nav-text">Search</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-section">
+                <h3 class="section-title">Recent</h3>
+                <ul class="recent-list" id="recentList">
+                    <!-- Dynamically populated -->
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="quick-stats" id="quickStats">
+                    <div class="stat">
+                        <span class="stat-value" id="activeSessionsCount">-</span>
+                        <span class="stat-label">Active</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="unreadSignalsCount">-</span>
+                        <span class="stat-label">Unread</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value" id="pendingDecisionsCount">-</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- View: Overview -->
+            <section id="view-overview" class="view active">
+                <header class="view-header">
+                    <h2>Overview</h2>
+                    <div class="period-selector">
+                        <button class="period-btn active" data-period="today">Today</button>
+                        <button class="period-btn" data-period="week">Week</button>
+                        <button class="period-btn" data-period="month">Month</button>
+                    </div>
+                </header>
+
+                <div class="summary-cards">
+                    <div class="card" data-metric="messages">
+                        <div class="card-title">📬 Messages</div>
+                        <div class="card-value" id="messagesCount">-</div>
+                        <div class="card-trend" id="messagesTrend">-</div>
+                    </div>
+                    <div class="card" data-metric="discussions">
+                        <div class="card-title">💬 Discussions</div>
+                        <div class="card-value" id="discussionsCount">-</div>
+                        <div class="card-trend" id="discussionsTrend">-</div>
+                    </div>
+                    <div class="card" data-metric="decisions">
+                        <div class="card-title">🎯 Decisions</div>
+                        <div class="card-value" id="decisionsCount">-</div>
+                        <div class="card-trend" id="decisionsTrend">-</div>
+                    </div>
+                    <div class="card" data-metric="channels">
+                        <div class="card-title">📢 Active Channels</div>
+                        <div class="card-value" id="channelsCount">-</div>
+                        <div class="card-trend" id="channelsTrend">-</div>
+                    </div>
+                </div>
+
+                <div class="chart-section">
+                    <div class="chart-container full-width">
+                        <h3 class="chart-title">📈 Activity Trend</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-section two-columns">
+                    <div class="chart-container">
+                        <h3 class="chart-title">🤖 Agent Activity</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="agentChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">📬 Channel Distribution</h3>
+                        <div class="chart-wrapper">
+                            <canvas id="channelChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="activity-section">
+                    <div class="activity-feed">
+                        <h3 class="section-title">🕐 Recent Activity</h3>
+                        <ul class="activity-list" id="activityFeed">
+                            <!-- Dynamically populated -->
+                        </ul>
+                    </div>
+                    <div class="insights-panel">
+                        <h3 class="section-title">💡 Insights</h3>
+                        <ul class="insights-list" id="insightsList">
+                            <!-- Dynamically populated -->
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Channel Flow -->
+            <section id="view-timeline" class="view">
+                <header class="view-header">
+                    <h2>Channel Flow</h2>
+                    <div class="view-controls">
+                        <select id="channelFlowSelector" class="filter-select channel-selector">
+                            <option value="">Select a channel...</option>
+                        </select>
+                    </div>
+                </header>
+
+                <!-- Channel List (when no channel selected) -->
+                <div class="channel-flow-list" id="channelFlowList">
+                    <!-- Dynamically populated -->
+                </div>
+
+                <!-- Channel Flow Detail (when channel selected) -->
+                <div class="channel-flow-detail" id="channelFlowDetail" style="display: none;">
+                    <!-- Channel Header -->
+                    <div class="flow-header" id="flowHeader">
+                        <!-- Dynamically populated -->
+                    </div>
+
+                    <!-- Flow Sections -->
+                    <div class="flow-content">
+                        <!-- Creation Section -->
+                        <div class="flow-section" id="flowCreation">
+                            <div class="flow-section-header">
+                                <span class="flow-section-icon">📢</span>
+                                <h3>Channel Created</h3>
+                            </div>
+                            <div class="flow-section-content" id="flowCreationContent"></div>
+                        </div>
+
+                        <!-- Members Section -->
+                        <div class="flow-section" id="flowMembers">
+                            <div class="flow-section-header">
+                                <span class="flow-section-icon">👥</span>
+                                <h3>Members</h3>
+                                <span class="flow-section-count" id="flowMembersCount">0</span>
+                            </div>
+                            <div class="flow-section-content" id="flowMembersContent"></div>
+                        </div>
+
+                        <!-- Conversation Section -->
+                        <div class="flow-section flow-conversation" id="flowConversation">
+                            <div class="flow-section-header">
+                                <span class="flow-section-icon">💬</span>
+                                <h3>Conversation</h3>
+                                <span class="flow-section-count" id="flowMessageCount">0 messages</span>
+                            </div>
+                            <div class="flow-conversation-container" id="flowConversationContent"></div>
+                        </div>
+
+                        <!-- Discussions Section -->
+                        <div class="flow-section" id="flowDiscussions">
+                            <div class="flow-section-header">
+                                <span class="flow-section-icon">💭</span>
+                                <h3>Discussions</h3>
+                                <span class="flow-section-count" id="flowDiscussionCount">0</span>
+                            </div>
+                            <div class="flow-section-content" id="flowDiscussionsContent"></div>
+                        </div>
+
+                        <!-- Decisions Section -->
+                        <div class="flow-section flow-decisions" id="flowDecisions">
+                            <div class="flow-section-header">
+                                <span class="flow-section-icon">🎯</span>
+                                <h3>Decisions</h3>
+                                <span class="flow-section-count" id="flowDecisionCount">0</span>
+                            </div>
+                            <div class="flow-section-content" id="flowDecisionsContent"></div>
+                        </div>
+
+                        <!-- Insights Section -->
+                        <div class="flow-section flow-insights" id="flowInsights">
+                            <div class="flow-section-header">
+                                <span class="flow-section-icon">💡</span>
+                                <h3>Channel Insights</h3>
+                            </div>
+                            <div class="flow-section-content" id="flowInsightsContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Sessions -->
+            <section id="view-sessions" class="view">
+                <header class="view-header">
+                    <h2>Sessions</h2>
+                    <div class="view-controls">
+                        <select id="sessionFilter" class="filter-select">
+                            <option value="all">All</option>
+                            <option value="active">Active</option>
+                            <option value="idle">Idle</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                        <select id="sessionSort" class="filter-select">
+                            <option value="lastActive">Last Active</option>
+                            <option value="messages">Messages</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+                </header>
+
+                <div class="sessions-layout">
+                    <div class="sessions-list" id="sessionsList">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="session-detail" id="sessionDetail">
+                        <div class="empty-state">
+                            <span class="empty-icon">📋</span>
+                            <p>Select a session to view details</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Decisions -->
+            <section id="view-decisions" class="view">
+                <header class="view-header">
+                    <h2>Decisions</h2>
+                    <div class="view-controls">
+                        <input type="text" id="decisionSearch" class="search-input" placeholder="Search decisions...">
+                        <select id="decisionAgentFilter" class="filter-select">
+                            <option value="all">All Agents</option>
+                            <option value="backend">Backend</option>
+                            <option value="frontend">Frontend</option>
+                            <option value="security">Security</option>
+                            <option value="infra">Infra</option>
+                        </select>
+                        <select id="decisionPeriod" class="filter-select">
+                            <option value="all">All Time</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                </header>
+
+                <div class="decisions-layout">
+                    <div class="decisions-list" id="decisionsList">
+                        <!-- Dynamically populated -->
+                    </div>
+                    <div class="decision-detail" id="decisionDetail">
+                        <div class="empty-state">
+                            <span class="empty-icon">🎯</span>
+                            <p>Select a decision to view details</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- View: Search -->
+            <section id="view-search" class="view">
+                <header class="view-header">
+                    <h2>Search</h2>
+                </header>
+
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="globalSearch" class="global-search-input" placeholder="Search messages, decisions, channels...">
+                        <button class="search-btn" id="searchBtn">Search</button>
+                    </div>
+                    <div class="search-filters">
+                        <label class="filter-chip">
+                            <input type="checkbox" value="messages" checked> Messages
+                        </label>
+                        <label class="filter-chip">
+                            <input type="checkbox" value="decisions" checked> Decisions
+                        </label>
+                        <label class="filter-chip">
+                            <input type="checkbox" value="channels" checked> Channels
+                        </label>
+                    </div>
+                </div>
+
+                <div class="search-results" id="searchResults">
+                    <div class="empty-state">
+                        <span class="empty-icon">🔍</span>
+                        <p>Enter a search term to find content</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="spa-data-loader.js"></script>
+    <script src="spa-app.js"></script>
+</body>
+</html>

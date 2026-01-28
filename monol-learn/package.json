@@ -1,0 +1,40 @@
+{
+  "name": "@monol/learn",
+  "version": "0.1.0",
+  "description": "Self-learning infrastructure for Claude Code agents",
+  "type": "module",
+  "main": "dist/foundations/logic/lib/index.js",
+  "types": "dist/foundations/logic/lib/index.d.ts",
+  "bin": {
+    "monol-learn": "dist/bin/cli.js"
+  },
+  "files": [
+    "dist",
+    ".claude-plugin",
+    "monol-learn-pkg"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "node --test test/*.test.ts",
+    "postinstall": "node scripts/install.cjs",
+    "preuninstall": "node scripts/uninstall.cjs"
+  },
+  "optionalDependencies": {
+    "@monol/datastore": "^0.1.0",
+    "@monol/rulebook": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.10",
+    "typescript": "^5.9.3"
+  },
+  "keywords": [
+    "claude-code",
+    "monol",
+    "self-learning",
+    "evolution",
+    "ai-agent"
+  ],
+  "author": "monol",
+  "license": "MIT"
+}

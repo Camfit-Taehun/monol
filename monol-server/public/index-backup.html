@@ -1,0 +1,3390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monol Console</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --bg-hover: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #6e7681;
+      --border-color: #30363d;
+      --accent-blue: #58a6ff;
+      --accent-green: #3fb950;
+      --accent-purple: #a371f7;
+      --accent-orange: #d29922;
+      --accent-red: #f85149;
+      --accent-cyan: #39c5cf;
+      --accent-pink: #db61a2;
+      --heatmap-0: #161b22;
+      --heatmap-1: #0e4429;
+      --heatmap-2: #006d32;
+      --heatmap-3: #26a641;
+      --heatmap-4: #39d353;
+    }
+    .light-theme {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f6f8fa;
+      --bg-tertiary: #eaeef2;
+      --bg-hover: #d0d7de;
+      --text-primary: #1f2328;
+      --text-secondary: #656d76;
+      --text-muted: #8c959f;
+      --border-color: #d0d7de;
+      --heatmap-0: #ebedf0;
+      --heatmap-1: #9be9a8;
+      --heatmap-2: #40c463;
+      --heatmap-3: #30a14e;
+      --heatmap-4: #216e39;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .sidebar-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .sidebar-header span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .nav-menu {
+      list-style: none;
+      padding: 12px 0;
+      flex: 1;
+    }
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .nav-item a:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .nav-item a.active {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent-cyan);
+    }
+    .nav-icon { font-size: 18px; width: 24px; text-align: center; }
+    .nav-section {
+      padding: 16px 20px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 8px;
+    }
+    .sidebar-footer button {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .sidebar-footer button:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    .page-actions { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: var(--bg-tertiary); }
+    .btn-primary {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+      color: white;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    .stat-value { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); }
+    .stat-trend { font-size: 12px; margin-top: 8px; }
+    .stat-trend.up { color: var(--accent-green); }
+    .stat-trend.down { color: var(--accent-red); }
+
+    /* Cards */
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-title { font-size: 16px; font-weight: 600; }
+    .card-body { padding: 20px; }
+
+    /* Grid layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    @media (max-width: 1200px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* Activity List */
+    .activity-list { max-height: 400px; overflow-y: auto; }
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: white;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .activity-content { flex: 1; min-width: 0; }
+    .activity-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+    .activity-meta { font-size: 12px; color: var(--text-muted); }
+    .activity-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .activity-badge.logs { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+    .activity-badge.rulebook { background: rgba(163, 113, 247, 0.15); color: var(--accent-purple); }
+    .activity-badge.scout { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+    .activity-badge.channels { background: rgba(210, 153, 34, 0.15); color: var(--accent-orange); }
+    .activity-badge.x { background: rgba(57, 197, 207, 0.15); color: var(--accent-cyan); }
+
+    /* Heatmap */
+    .heatmap { display: flex; flex-direction: column; gap: 3px; }
+    .heatmap-row { display: flex; align-items: center; gap: 3px; }
+    .heatmap-label { width: 32px; font-size: 10px; color: var(--text-muted); text-align: right; padding-right: 8px; }
+    .heatmap-cells { display: flex; gap: 3px; }
+    .heatmap-cell {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .heatmap-cell:hover { transform: scale(1.3); }
+    .heatmap-cell[data-level="0"] { background: var(--heatmap-0); }
+    .heatmap-cell[data-level="1"] { background: var(--heatmap-1); }
+    .heatmap-cell[data-level="2"] { background: var(--heatmap-2); }
+    .heatmap-cell[data-level="3"] { background: var(--heatmap-3); }
+    .heatmap-cell[data-level="4"] { background: var(--heatmap-4); }
+    .heatmap-legend { display: flex; align-items: center; gap: 4px; margin-top: 12px; font-size: 11px; color: var(--text-muted); }
+
+    /* Charts */
+    .chart-container { position: relative; height: 200px; }
+    .donut-container { display: flex; align-items: center; gap: 24px; }
+    .donut-chart { position: relative; width: 140px; height: 140px; flex-shrink: 0; }
+    .donut-chart svg { transform: rotate(-90deg); }
+    .donut-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .donut-center .value { font-size: 24px; font-weight: 700; }
+    .donut-center .label { font-size: 11px; color: var(--text-secondary); }
+    .legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* Tables */
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .table th { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; }
+    .table td { font-size: 14px; }
+    .table tr:hover { background: var(--bg-tertiary); }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: var(--bg-tertiary);
+    }
+    .tag.error { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+    .tag.warning { background: rgba(210, 153, 34, 0.15); color: var(--accent-orange); }
+    .tag.info { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+
+    /* Plugin Cards */
+    .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .plugin-card {
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      padding: 20px;
+      transition: transform 0.2s;
+    }
+    .plugin-card:hover { transform: translateY(-2px); }
+    .plugin-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .plugin-icon { font-size: 24px; }
+    .plugin-name { font-weight: 600; font-size: 16px; }
+    .plugin-version { font-size: 12px; color: var(--text-muted); }
+    .plugin-stats { display: flex; gap: 16px; font-size: 13px; color: var(--text-secondary); }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: var(--text-secondary);
+    }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+
+    /* Loading */
+    .loading { display: flex; align-items: center; justify-content: center; padding: 48px; color: var(--text-secondary); }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--accent-cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* View containers */
+    .view { display: none; }
+    .view.active { display: block; }
+    .x-tab-content { display: none; }
+    .x-tab-content.active { display: block; }
+
+    /* Insights Panel */
+    .insights-card { background: linear-gradient(135deg, rgba(57,197,207,0.1), rgba(163,113,247,0.1)); }
+    .insights-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+    .insight-item { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: var(--bg-tertiary); border-radius: 8px; font-size: 14px; }
+    .insight-icon { font-size: 18px; }
+    .insight-text { color: var(--text-primary); }
+    .card-subtitle { font-size: 12px; color: var(--text-muted); }
+    .card-link { font-size: 13px; color: var(--accent-blue); text-decoration: none; }
+    .card-link:hover { text-decoration: underline; }
+
+    /* Search Input */
+    .search-input { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; min-width: 180px; }
+    .search-input:focus { outline: none; border-color: var(--accent-cyan); }
+
+    /* Tabs */
+    .card-tabs, .x-tabs { display: flex; gap: 4px; }
+    .tab-btn { padding: 6px 14px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-tertiary); color: var(--text-secondary); font-size: 13px; cursor: pointer; }
+    .tab-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .tab-btn.active { background: var(--accent-cyan); border-color: var(--accent-cyan); color: white; }
+
+    /* Sessions Grid */
+    .sessions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .session-card { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+    .session-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .session-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .session-title { font-weight: 600; font-size: 15px; }
+    .session-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: rgba(57,197,207,0.15); color: var(--accent-cyan); }
+    .session-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .session-stats { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); }
+    .session-insight { margin-top: 10px; padding: 8px 12px; background: rgba(210,153,34,0.1); border-radius: 6px; font-size: 12px; color: var(--accent-orange); }
+
+    /* Tags Cloud */
+    .tags-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-item { padding: 6px 14px; background: var(--bg-tertiary); border-radius: 16px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+    .tag-item:hover { background: var(--accent-cyan); color: white; }
+    .tag-item.large { font-size: 16px; font-weight: 600; }
+    .tag-item.medium { font-size: 14px; }
+    .tag-item.small { font-size: 12px; opacity: 0.8; }
+
+    /* Rules Grid */
+    .rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .rule-card { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; border-left: 3px solid var(--accent-purple); }
+    .rule-card.error { border-left-color: var(--accent-red); }
+    .rule-card.warning { border-left-color: var(--accent-orange); }
+    .rule-card.info { border-left-color: var(--accent-blue); }
+    .rule-name { font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+    .rule-category { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+    .rule-description { font-size: 13px; color: var(--text-secondary); }
+
+    /* Severity Bars */
+    .severity-bars { display: flex; flex-direction: column; gap: 12px; }
+    .severity-bar { display: flex; align-items: center; gap: 12px; }
+    .severity-label { width: 70px; font-size: 13px; }
+    .severity-track { flex: 1; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; }
+    .severity-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+    .severity-fill.error { background: var(--accent-red); }
+    .severity-fill.warning { background: var(--accent-orange); }
+    .severity-fill.info { background: var(--accent-blue); }
+    .severity-count { width: 30px; text-align: right; font-size: 13px; color: var(--text-muted); }
+
+    /* Health Gauge */
+    .health-gauge { display: flex; justify-content: center; margin-bottom: 16px; }
+    .gauge-circle { position: relative; width: 140px; height: 140px; }
+    .gauge-circle svg { width: 100%; height: 100%; }
+    .gauge-value { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .gauge-value span { font-size: 32px; font-weight: 700; }
+    .gauge-value small { font-size: 14px; color: var(--text-muted); }
+    .health-status { font-size: 14px; color: var(--accent-green); font-weight: 500; }
+
+    /* Plugin Rankings */
+    .plugin-rankings { display: flex; flex-direction: column; gap: 12px; }
+    .ranking-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--bg-tertiary); border-radius: 8px; }
+    .ranking-position { width: 28px; height: 28px; border-radius: 50%; background: var(--accent-cyan); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; }
+    .ranking-position.gold { background: #ffd700; color: #333; }
+    .ranking-position.silver { background: #c0c0c0; color: #333; }
+    .ranking-position.bronze { background: #cd7f32; color: white; }
+    .ranking-info { flex: 1; }
+    .ranking-name { font-weight: 500; font-size: 14px; }
+    .ranking-meta { font-size: 12px; color: var(--text-muted); }
+    .ranking-score { font-weight: 700; font-size: 16px; color: var(--accent-green); }
+
+    /* Recommendations */
+    .recommendations-list { display: flex; flex-direction: column; gap: 12px; }
+    .recommendation-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; }
+    .recommendation-icon { font-size: 20px; }
+    .recommendation-content { flex: 1; }
+    .recommendation-title { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+    .recommendation-desc { font-size: 12px; color: var(--text-muted); }
+
+    /* Agent Activity */
+    .agent-list { display: flex; flex-direction: column; gap: 12px; }
+    .agent-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; }
+    .agent-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .agent-info { flex: 1; }
+    .agent-name { font-weight: 500; font-size: 14px; }
+    .agent-status { font-size: 12px; color: var(--text-muted); }
+    .agent-metric { text-align: right; }
+    .agent-metric-value { font-size: 18px; font-weight: 700; }
+    .agent-metric-label { font-size: 11px; color: var(--text-muted); }
+
+    /* Channel Flow */
+    .channel-flow { display: flex; flex-direction: column; gap: 8px; }
+    .flow-item { display: flex; align-items: center; gap: 8px; }
+    .flow-node { padding: 6px 12px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px; }
+    .flow-arrow { color: var(--accent-cyan); font-size: 16px; }
+
+    /* Channels Grid */
+    .channels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .channel-card { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; text-align: center; }
+    .channel-icon { font-size: 32px; margin-bottom: 8px; }
+    .channel-name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+    .channel-count { font-size: 12px; color: var(--text-muted); }
+
+    /* Decisions */
+    .decisions-list { display: flex; flex-direction: column; gap: 12px; }
+    .decision-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px; background: var(--bg-tertiary); border-radius: 8px; border-left: 3px solid var(--accent-green); }
+    .decision-icon { font-size: 20px; }
+    .decision-content { flex: 1; }
+    .decision-title { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+    .decision-context { font-size: 12px; color: var(--text-muted); }
+    .decision-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+    /* Modules Grid */
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+    .module-card { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; }
+    .module-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .module-icon { font-size: 24px; }
+    .module-name { font-weight: 600; font-size: 15px; }
+    .module-version { font-size: 11px; color: var(--text-muted); background: var(--bg-hover); padding: 2px 6px; border-radius: 4px; }
+    .module-status { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.active { background: var(--accent-green); }
+    .status-dot.inactive { background: var(--text-muted); }
+
+    /* Evolution Timeline */
+    .evolution-timeline { position: relative; padding-left: 24px; }
+    .timeline-item { position: relative; padding-bottom: 24px; padding-left: 20px; border-left: 2px solid var(--border-color); }
+    .timeline-item:last-child { border-left-color: transparent; }
+    .timeline-dot { position: absolute; left: -9px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--accent-cyan); border: 2px solid var(--bg-secondary); }
+    .timeline-content { background: var(--bg-tertiary); border-radius: 8px; padding: 12px 16px; }
+    .timeline-title { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+    .timeline-desc { font-size: 12px; color: var(--text-muted); }
+    .timeline-time { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+    /* Lineage Tree */
+    .lineage-tree { padding: 16px; }
+    .lineage-node { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+    .lineage-connector { width: 24px; color: var(--border-color); }
+    .lineage-label { padding: 4px 10px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px; }
+
+    /* Lessons */
+    .lessons-list { display: flex; flex-direction: column; gap: 12px; }
+    .lesson-item { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; }
+    .lesson-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .lesson-title { font-weight: 600; font-size: 15px; }
+    .lesson-category { font-size: 11px; padding: 2px 8px; background: rgba(163,113,247,0.15); color: var(--accent-purple); border-radius: 10px; }
+    .lesson-content { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+    .lesson-meta { margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+
+    /* Patterns Grid */
+    .patterns-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .pattern-card { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; text-align: center; }
+    .pattern-icon { font-size: 32px; margin-bottom: 8px; }
+    .pattern-name { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+    .pattern-count { font-size: 24px; font-weight: 700; color: var(--accent-cyan); }
+    .pattern-label { font-size: 11px; color: var(--text-muted); }
+
+    /* Pipeline Stats */
+    .pipeline-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .pipeline-stat { background: var(--bg-tertiary); border-radius: 10px; padding: 16px; text-align: center; }
+    .pipeline-value { font-size: 28px; font-weight: 700; }
+    .pipeline-label { font-size: 12px; color: var(--text-muted); }
+    .pipeline-trend { font-size: 12px; margin-top: 4px; }
+    .pipeline-trend.up { color: var(--accent-green); }
+    .pipeline-trend.down { color: var(--accent-red); }
+
+    /* Modal */
+    .modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .modal.hidden { display: none; }
+    .modal-content { background: var(--bg-secondary); border-radius: 12px; width: 90%; max-width: 700px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-color); }
+    .modal-header h2 { font-size: 18px; font-weight: 600; }
+    .modal-close { width: 32px; height: 32px; border: none; background: transparent; color: var(--text-secondary); font-size: 24px; cursor: pointer; border-radius: 6px; }
+    .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .modal-body { padding: 20px; overflow-y: auto; }
+
+    /* Compact Activity List */
+    .activity-list.compact .activity-item { padding: 8px 0; }
+    .activity-list.compact .activity-avatar { width: 28px; height: 28px; font-size: 11px; }
+    .activity-list.compact .activity-title { font-size: 13px; }
+
+    /* Hidden */
+    .hidden { display: none !important; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--accent-green);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-header">
+      <h1>Monol Console</h1>
+      <span>Team Activity Hub</span>
+    </div>
+
+    <ul class="nav-menu">
+      <li class="nav-section">Overview</li>
+      <li class="nav-item">
+        <a href="#overview" class="active" data-view="overview">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#activity" data-view="activity">
+          <span class="nav-icon">⚡</span>
+          <span>Activity Feed</span>
+        </a>
+      </li>
+
+      <li class="nav-section">Plugins</li>
+      <li class="nav-item">
+        <a href="#logs" data-view="logs">
+          <span class="nav-icon">📝</span>
+          <span>Logs</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#rulebook" data-view="rulebook">
+          <span class="nav-icon">📚</span>
+          <span>Rulebook</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#scout" data-view="scout">
+          <span class="nav-icon">🔍</span>
+          <span>Scout</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#channels" data-view="channels">
+          <span class="nav-icon">💬</span>
+          <span>Channels</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="#monol-x" data-view="monol-x">
+          <span class="nav-icon">⚙️</span>
+          <span>Monol X</span>
+        </a>
+      </li>
+
+      <li class="nav-section">Team</li>
+      <li class="nav-item">
+        <a href="#users" data-view="users">
+          <span class="nav-icon">👥</span>
+          <span>Members</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button onclick="toggleTheme()">🌓 Theme</button>
+      <button onclick="refreshData()">🔄 Refresh</button>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Overview View -->
+    <div class="view active" id="overview-view">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <div class="page-actions">
+          <select id="time-range" class="btn" onchange="refreshData()">
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="all">All time</option>
+          </select>
+          <button class="btn" onclick="refreshData()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Insights Panel -->
+      <div class="card insights-card">
+        <div class="card-header">
+          <h2 class="card-title">💡 Insights</h2>
+          <span class="card-subtitle" id="insights-time">Updated just now</span>
+        </div>
+        <div class="card-body">
+          <div class="insights-grid" id="insights-panel">
+            <div class="insight-item"><span class="insight-icon">📈</span><span class="insight-text">Loading insights...</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <div class="loading"><div class="spinner"></div>Loading...</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Activity Trend</h2>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" style="height:250px">
+              <canvas id="trend-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Plugin Distribution</h2>
+          </div>
+          <div class="card-body">
+            <div class="donut-container">
+              <div class="donut-chart" id="plugin-donut"></div>
+              <div class="legend" id="plugin-legend"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Top Contributors</h2>
+          </div>
+          <div class="card-body">
+            <div class="chart-container">
+              <canvas id="user-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Activity</h2>
+            <a href="#activity" class="card-link" onclick="switchView('activity')">View all →</a>
+          </div>
+          <div class="card-body">
+            <div class="activity-list compact" id="overview-activity"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Activity Heatmap</h2>
+          <span class="card-subtitle">Events by day and hour</span>
+        </div>
+        <div class="card-body">
+          <div class="heatmap" id="heatmap"></div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="heatmap-cell" data-level="0"></div>
+            <div class="heatmap-cell" data-level="1"></div>
+            <div class="heatmap-cell" data-level="2"></div>
+            <div class="heatmap-cell" data-level="3"></div>
+            <div class="heatmap-cell" data-level="4"></div>
+            <span>More</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity View -->
+    <div class="view" id="activity-view">
+      <div class="page-header">
+        <h1 class="page-title">Activity Feed</h1>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="activity-list" id="all-activity-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logs View -->
+    <div class="view" id="logs-view">
+      <div class="page-header">
+        <h1 class="page-title">📝 Session Logs</h1>
+        <div class="page-actions">
+          <input type="text" class="search-input" id="logs-search" placeholder="Search sessions..." onkeyup="filterSessions()">
+          <select class="btn" id="logs-filter" onchange="filterSessions()">
+            <option value="all">All Authors</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Logs Insights -->
+      <div class="card insights-card">
+        <div class="card-header">
+          <h2 class="card-title">💡 Session Insights</h2>
+        </div>
+        <div class="card-body">
+          <div class="insights-grid" id="logs-insights"></div>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="logs-stats"></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Session Timeline</h2>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" style="height:250px">
+              <canvas id="sessions-timeline-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Topics Distribution</h2>
+          </div>
+          <div class="card-body">
+            <div class="tags-cloud" id="topics-cloud"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Sessions</h2>
+          <div class="card-tabs">
+            <button class="tab-btn active" onclick="setLogsTab('grid')">Grid</button>
+            <button class="tab-btn" onclick="setLogsTab('list')">List</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="sessions-grid" id="sessions-grid"></div>
+          <div class="sessions-list hidden" id="sessions-list"></div>
+        </div>
+      </div>
+
+      <!-- Session Detail Modal -->
+      <div class="modal hidden" id="session-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 id="modal-title">Session Detail</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+          </div>
+          <div class="modal-body" id="modal-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rulebook View -->
+    <div class="view" id="rulebook-view">
+      <div class="page-header">
+        <h1 class="page-title">📚 Team Rulebook</h1>
+        <div class="page-actions">
+          <input type="text" class="search-input" id="rules-search" placeholder="Search rules..." onkeyup="filterRules()">
+          <select class="btn" id="rules-category-filter" onchange="filterRules()">
+            <option value="all">All Categories</option>
+          </select>
+          <select class="btn" id="rules-severity-filter" onchange="filterRules()">
+            <option value="all">All Severity</option>
+            <option value="error">Error</option>
+            <option value="warning">Warning</option>
+            <option value="info">Info</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="rulebook-stats"></div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">By Category</h2>
+          </div>
+          <div class="card-body">
+            <div class="chart-container" style="height:200px">
+              <canvas id="rules-category-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">By Severity</h2>
+          </div>
+          <div class="card-body">
+            <div class="severity-bars" id="severity-bars"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Recent Activity</h2>
+          </div>
+          <div class="card-body">
+            <div class="activity-list compact" id="rules-activity"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">All Rules</h2>
+          <span class="card-subtitle" id="rules-count">0 rules</span>
+        </div>
+        <div class="card-body">
+          <div class="rules-grid" id="rules-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scout View -->
+    <div class="view" id="scout-view">
+      <div class="page-header">
+        <h1 class="page-title">🔍 Plugin Scout</h1>
+        <div class="page-actions">
+          <input type="text" class="search-input" id="plugin-search" placeholder="Search plugins... (⌘K)" onclick="openScoutSearch()">
+          <button class="btn" onclick="exportScoutData()">📤 Export</button>
+          <button class="btn btn-primary" onclick="runScout()">🔍 Run Scout</button>
+        </div>
+      </div>
+
+      <!-- Scout Tabs -->
+      <div class="scout-tabs" style="display:flex;gap:4px;background:var(--bg-secondary);padding:4px;border-radius:10px;margin-bottom:20px">
+        <button class="tab-btn active" onclick="setScoutTab('overview')">📊 Overview</button>
+        <button class="tab-btn" onclick="setScoutTab('plugins')">🔌 Plugins <span class="tab-badge" id="scout-plugin-count">0</span></button>
+        <button class="tab-btn" onclick="setScoutTab('team')">👥 Team</button>
+        <button class="tab-btn" onclick="setScoutTab('marketplace')">🏪 Marketplace</button>
+        <button class="tab-btn" onclick="setScoutTab('insights')">💡 Insights</button>
+      </div>
+
+      <!-- Scout Overview Tab -->
+      <div class="scout-tab-content active" id="scout-overview-tab">
+        <div class="stats-grid" id="scout-stats"></div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Usage Trend (14 Days)</h2></div>
+            <div class="card-body">
+              <div class="chart-container" style="height:220px"><canvas id="scout-usage-chart"></canvas></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Plugin Health Score</h2></div>
+            <div class="card-body" style="text-align:center">
+              <div class="health-gauge" id="health-gauge">
+                <div class="gauge-circle">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border-color)" stroke-width="8"/>
+                    <circle id="gauge-progress" cx="50" cy="50" r="45" fill="none" stroke="var(--accent-green)" stroke-width="8" stroke-linecap="round" stroke-dasharray="0 283" transform="rotate(-90 50 50)"/>
+                  </svg>
+                  <div class="gauge-value"><span id="health-score">--</span><small>/100</small></div>
+                </div>
+              </div>
+              <div class="health-status" id="health-status">Calculating...</div>
+              <div class="health-breakdown" id="health-breakdown" style="margin-top:12px;text-align:left;font-size:12px"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🏆 Plugin Rankings</h2></div>
+            <div class="card-body"><div class="plugin-rankings" id="plugin-rankings"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">📈 Category Distribution</h2></div>
+            <div class="card-body">
+              <div class="chart-container" style="height:200px"><canvas id="plugin-category-chart"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scout Plugins Tab -->
+      <div class="scout-tab-content" id="scout-plugins-tab">
+        <div class="card">
+          <div class="list-controls">
+            <div class="filter-group">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="active">Active</button>
+              <button class="filter-btn" data-filter="inactive">Inactive</button>
+              <button class="filter-btn" data-filter="outdated">Outdated</button>
+            </div>
+            <select class="btn" id="scout-category-filter"><option value="all">All Categories</option></select>
+          </div>
+          <div class="card-body"><div class="plugin-grid" id="installed-plugins"></div></div>
+        </div>
+      </div>
+
+      <!-- Scout Team Tab -->
+      <div class="scout-tab-content" id="scout-team-tab">
+        <div class="stats-grid" id="scout-team-stats"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Team Plugin Usage</h2></div>
+            <div class="card-body">
+              <div class="chart-container" style="height:220px"><canvas id="scout-team-chart"></canvas></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Top Users</h2></div>
+            <div class="card-body"><div class="plugin-rankings" id="scout-team-rankings"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">Team Members</h2></div>
+          <div class="card-body"><div class="activity-list" id="scout-team-list"></div></div>
+        </div>
+      </div>
+
+      <!-- Scout Marketplace Tab -->
+      <div class="scout-tab-content" id="scout-marketplace-tab">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🏪 Available Plugins</h2>
+            <input type="text" class="search-input" id="marketplace-search" placeholder="Search marketplace...">
+          </div>
+          <div class="card-body"><div class="plugin-grid" id="marketplace-plugins"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">💡 Recommendations</h2></div>
+          <div class="card-body"><div class="recommendations-list" id="scout-recommendations"></div></div>
+        </div>
+      </div>
+
+      <!-- Scout Insights Tab -->
+      <div class="scout-tab-content" id="scout-insights-tab">
+        <div class="card insights-card">
+          <div class="card-header"><h2 class="card-title">💡 Scout Insights</h2></div>
+          <div class="card-body"><div id="scout-insights-list"></div></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">🔔 Activity Feed</h2></div>
+          <div class="card-body"><div class="activity-list" id="scout-activity"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Channels View -->
+    <div class="view" id="channels-view">
+      <div class="page-header">
+        <h1 class="page-title">💬 Channels</h1>
+        <div class="page-actions">
+          <select class="btn" id="channels-period">
+            <option value="today">Today</option>
+            <option value="week" selected>This Week</option>
+            <option value="month">This Month</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Channels Tabs -->
+      <div class="channels-tabs" style="display:flex;gap:4px;background:var(--bg-secondary);padding:4px;border-radius:10px;margin-bottom:20px">
+        <button class="tab-btn active" onclick="setChannelsTab('overview')">📊 Overview</button>
+        <button class="tab-btn" onclick="setChannelsTab('flow')">🔄 Channel Flow</button>
+        <button class="tab-btn" onclick="setChannelsTab('sessions')">📋 Sessions</button>
+        <button class="tab-btn" onclick="setChannelsTab('decisions')">🎯 Decisions</button>
+        <button class="tab-btn" onclick="setChannelsTab('search')">🔍 Search</button>
+      </div>
+
+      <!-- Channels Overview Tab -->
+      <div class="channels-tab-content active" id="channels-overview-tab">
+        <div class="stats-grid" id="channels-stats"></div>
+
+        <div class="card" style="margin-bottom:16px">
+          <div class="card-header"><h2 class="card-title">📈 Activity Trend</h2></div>
+          <div class="card-body">
+            <div class="chart-container" style="height:220px"><canvas id="channels-activity-chart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🤖 Agent Activity</h2></div>
+            <div class="card-body">
+              <div class="chart-container" style="height:200px"><canvas id="channels-agent-chart"></canvas></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">📬 Channel Distribution</h2></div>
+            <div class="card-body">
+              <div class="chart-container" style="height:200px"><canvas id="channels-distribution-chart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🕐 Recent Activity</h2></div>
+            <div class="card-body"><div class="activity-list" id="channels-activity" style="max-height:300px;overflow-y:auto"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">💡 Insights</h2></div>
+            <div class="card-body"><div id="channels-insights"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Flow Tab -->
+      <div class="channels-tab-content" id="channels-flow-tab">
+        <div class="grid-2" style="grid-template-columns:300px 1fr">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">📢 Channels</h2></div>
+            <div class="card-body" style="padding:0"><div class="activity-list" id="channels-flow-list" style="max-height:500px;overflow-y:auto"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title" id="channel-flow-title">Select a channel</h2>
+            </div>
+            <div class="card-body" id="channel-flow-detail">
+              <div class="empty-state"><div class="icon">📢</div>Select a channel to view flow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Sessions Tab -->
+      <div class="channels-tab-content" id="channels-sessions-tab">
+        <div class="grid-2" style="grid-template-columns:1fr 350px">
+          <div class="card">
+            <div class="list-controls">
+              <div class="filter-group">
+                <button class="filter-btn active" data-status="all">All</button>
+                <button class="filter-btn" data-status="active">Active</button>
+                <button class="filter-btn" data-status="idle">Idle</button>
+              </div>
+              <select class="btn" id="channels-session-sort">
+                <option value="lastActive">Last Active</option>
+                <option value="messages">Messages</option>
+              </select>
+            </div>
+            <div class="card-body" style="padding:0"><div class="activity-list" id="channels-sessions-list" style="max-height:450px;overflow-y:auto"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Session Detail</h2></div>
+            <div class="card-body" id="channels-session-detail">
+              <div class="empty-state"><div class="icon">📋</div>Select a session</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Decisions Tab -->
+      <div class="channels-tab-content" id="channels-decisions-tab">
+        <div class="card">
+          <div class="list-controls">
+            <input type="text" class="search-input" id="decisions-search" placeholder="Search decisions...">
+            <select class="btn" id="decisions-agent-filter"><option value="all">All Agents</option></select>
+            <select class="btn" id="decisions-period-filter">
+              <option value="all">All Time</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:16px;grid-template-columns:1fr 400px">
+          <div class="card">
+            <div class="card-body" style="padding:0"><div class="decisions-list" id="decisions-list" style="max-height:450px;overflow-y:auto"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Decision Detail</h2></div>
+            <div class="card-body" id="decision-detail">
+              <div class="empty-state"><div class="icon">🎯</div>Select a decision</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels Search Tab -->
+      <div class="channels-tab-content" id="channels-search-tab">
+        <div class="card">
+          <div class="card-body">
+            <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px">
+              <input type="text" class="search-input" id="channels-global-search" placeholder="Search messages, decisions, channels..." style="flex:1">
+              <button class="btn btn-primary" onclick="searchChannels()">Search</button>
+            </div>
+            <div class="filter-group">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" checked value="messages"> Messages</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" checked value="decisions"> Decisions</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" checked value="channels"> Channels</label>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-body" id="channels-search-results">
+            <div class="empty-state"><div class="icon">🔍</div>Enter a search term</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monol X View -->
+    <div class="view" id="monol-x-view">
+      <div class="page-header">
+        <h1 class="page-title">⚙️ Monol X</h1>
+        <div class="page-actions">
+          <button class="btn" onclick="refreshMonolX()">🔄 Refresh</button>
+        </div>
+      </div>
+
+      <!-- Monol X Tabs -->
+      <div class="x-tabs" style="display:flex;gap:4px;background:var(--bg-secondary);padding:4px;border-radius:10px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="tab-btn active" onclick="setXTab('overview')">📊 Overview</button>
+        <button class="tab-btn" onclick="setXTab('modules')">🧩 Modules</button>
+        <button class="tab-btn" onclick="setXTab('evolution')">🧬 Evolution</button>
+        <button class="tab-btn" onclick="setXTab('lessons')">📚 Lessons</button>
+        <button class="tab-btn" onclick="setXTab('sessions')">🕐 Sessions</button>
+        <button class="tab-btn" onclick="setXTab('router')">🔀 Router</button>
+        <button class="tab-btn" onclick="setXTab('analytics')">📈 Analytics</button>
+        <button class="tab-btn" onclick="setXTab('lineage')">🌳 Lineage</button>
+      </div>
+
+      <!-- X Overview Tab -->
+      <div class="x-tab-content active" id="x-overview-tab">
+        <div class="stats-grid" id="x-stats"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Module Scores by Role</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:220px"><canvas id="x-scores-role-chart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Foundation Distribution</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:220px"><canvas id="x-foundation-chart"></canvas></div></div>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">🏆 Top Performers</h2></div>
+            <div class="card-body"><div class="plugin-rankings" id="x-top-performers"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">⚠️ At Risk</h2></div>
+            <div class="card-body"><div class="plugin-rankings" id="x-at-risk"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- X Modules Tab -->
+      <div class="x-tab-content" id="x-modules-tab">
+        <div class="card">
+          <div class="list-controls">
+            <div class="filter-group">
+              <select class="btn" id="x-module-role-filter"><option value="all">All Roles</option></select>
+              <select class="btn" id="x-module-status-filter"><option value="all">All Status</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
+            </div>
+            <button class="btn btn-primary" onclick="showCreateModuleModal()">+ New Module</button>
+          </div>
+          <div class="card-body"><div class="modules-grid" id="modules-grid"></div></div>
+        </div>
+      </div>
+
+      <!-- X Evolution Tab -->
+      <div class="x-tab-content" id="x-evolution-tab">
+        <div class="stats-grid" id="x-evolution-stats"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Role Diversity</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="x-role-diversity-chart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Score Trends (Top 5)</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="x-score-trends-chart"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">Evolution Boundaries</h2></div>
+          <div class="card-body">
+            <table class="table" id="x-boundaries-table"><thead><tr><th>Module</th><th>Role</th><th>Score</th><th>Floor</th><th>Ceiling</th><th>Status</th></tr></thead><tbody id="x-boundaries-tbody"></tbody></table>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">🔮 Evolution Simulator</h2></div>
+          <div class="card-body">
+            <div class="grid-3" style="gap:16px">
+              <div><label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Module</label><select class="btn" id="x-sim-module" style="width:100%"></select></div>
+              <div><label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:4px">Scenario</label><select class="btn" id="x-sim-scenario" style="width:100%"><option value="success">10x Success (+3 avg)</option><option value="failure">10x Failure (-5 avg)</option><option value="mixed">10x Mixed (0 avg)</option></select></div>
+              <div style="display:flex;align-items:flex-end"><button class="btn btn-primary" onclick="runEvolutionSim()" style="width:100%">Run Simulation</button></div>
+            </div>
+            <div id="x-sim-result" style="margin-top:16px"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- X Lessons Tab -->
+      <div class="x-tab-content" id="x-lessons-tab">
+        <div class="stats-grid" id="x-lessons-stats"></div>
+        <div class="card">
+          <div class="list-controls">
+            <select class="btn" id="x-lesson-type-filter"><option value="all">All Types</option><option value="success">Success</option><option value="failure">Failure</option><option value="insight">Insight</option><option value="pattern">Pattern</option></select>
+            <select class="btn" id="x-lesson-module-filter"><option value="all">All Modules</option></select>
+          </div>
+          <div class="card-body"><div class="lessons-list" id="lessons-list"></div></div>
+        </div>
+      </div>
+
+      <!-- X Sessions Tab -->
+      <div class="x-tab-content" id="x-sessions-tab">
+        <div class="stats-grid" id="x-sessions-stats"></div>
+        <div class="card">
+          <div class="card-header"><h2 class="card-title">Session Performance</h2></div>
+          <div class="card-body"><div class="chart-container" style="height:220px"><canvas id="x-sessions-chart"></canvas></div></div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">Recent Sessions</h2></div>
+          <div class="card-body"><div class="activity-list" id="x-sessions-list"></div></div>
+        </div>
+      </div>
+
+      <!-- X Router Tab -->
+      <div class="x-tab-content" id="x-router-tab">
+        <div class="stats-grid" id="x-router-stats"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Selection Distribution</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="x-selection-dist-chart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Selection by Role</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="x-selection-role-chart"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">Selection History</h2></div>
+          <div class="card-body">
+            <table class="table"><thead><tr><th>Time</th><th>Session</th><th>Role</th><th>Selected</th><th>Score</th><th>Reason</th></tr></thead><tbody id="x-router-history"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- X Analytics Tab -->
+      <div class="x-tab-content" id="x-analytics-tab">
+        <div class="stats-grid" id="x-analytics-stats"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Activity by Hour</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="x-activity-hours-chart"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h2 class="card-title">Weekly Trend</h2></div>
+            <div class="card-body"><div class="chart-container" style="height:200px"><canvas id="x-weekly-trend-chart"></canvas></div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><h2 class="card-title">💡 AI-Generated Insights</h2></div>
+          <div class="card-body"><div id="x-analytics-insights"></div></div>
+        </div>
+      </div>
+
+      <!-- X Lineage Tab -->
+      <div class="x-tab-content" id="x-lineage-tab">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Evolution Tree</h2>
+            <select class="btn" id="x-lineage-role-filter"><option value="all">All Roles</option></select>
+          </div>
+          <div class="card-body"><div class="lineage-tree" id="lineage-tree" style="min-height:300px"></div></div>
+        </div>
+        <div class="stats-grid" id="x-lineage-stats" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- Users View -->
+    <div class="view" id="users-view">
+      <div class="page-header">
+        <h1 class="page-title">👥 Team Members</h1>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <table class="table" id="users-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Sessions</th>
+                <th>Messages</th>
+                <th>Rules</th>
+                <th>Last Active</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const API_BASE = '/api';
+    const COLORS = {
+      blue: '#58a6ff',
+      green: '#3fb950',
+      purple: '#a371f7',
+      orange: '#d29922',
+      red: '#f85149',
+      cyan: '#39c5cf',
+      pink: '#db61a2'
+    };
+    const PLUGIN_COLORS = {
+      'monol-logs': COLORS.blue,
+      'monol-rulebook': COLORS.purple,
+      'monol-scout': COLORS.green,
+      'monol-channels': COLORS.orange,
+      'monol-x': COLORS.cyan
+    };
+
+    let currentView = 'overview';
+    let charts = {};
+    let cachedData = {};
+
+    // Navigation
+    document.querySelectorAll('.nav-item a').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchView(link.dataset.view);
+      });
+    });
+
+    function switchView(view) {
+      document.querySelectorAll('.nav-item a').forEach(l => l.classList.remove('active'));
+      document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+      currentView = view;
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(`${currentView}-view`).classList.add('active');
+      loadViewData();
+    }
+
+    // API
+    async function fetchAPI(endpoint) {
+      try {
+        const res = await fetch(`${API_BASE}${endpoint}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        console.error('API error:', err);
+        return null;
+      }
+    }
+
+    async function loadViewData() {
+      switch (currentView) {
+        case 'overview': await loadOverview(); break;
+        case 'activity': await loadActivity(); break;
+        case 'logs': await loadLogs(); break;
+        case 'rulebook': await loadRulebook(); break;
+        case 'scout': await loadScout(); break;
+        case 'channels': await loadChannels(); break;
+        case 'monol-x': await loadMonolX(); break;
+        case 'users': await loadUsers(); break;
+      }
+    }
+
+    // ========== OVERVIEW ==========
+    async function loadOverview() {
+      const [stats, pluginStats, users, heatmap, events] = await Promise.all([
+        fetchAPI('/stats/overview'),
+        fetchAPI('/stats/plugins'),
+        fetchAPI('/stats/users'),
+        fetchAPI('/stats/heatmap'),
+        fetchAPI('/events?limit=50')
+      ]);
+
+      // Generate Insights
+      generateInsights(stats, pluginStats, users, events);
+
+      // Stats Grid
+      if (stats) {
+        const duration = formatDuration(stats.sessions.totalDurationMs);
+        document.getElementById('stats-grid').innerHTML = `
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(88,166,255,0.15)">👥</div>
+            <div class="stat-value">${stats.users}</div>
+            <div class="stat-label">Active Users</div>
+            <div class="stat-trend up">↑ Active this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(63,185,80,0.15)">📝</div>
+            <div class="stat-value">${stats.sessions.count}</div>
+            <div class="stat-label">Sessions</div>
+            <div class="stat-trend up">↑ ${Math.round(stats.sessions.count * 0.15)} this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(163,113,247,0.15)">💬</div>
+            <div class="stat-value">${stats.sessions.messages.toLocaleString()}</div>
+            <div class="stat-label">Messages</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(210,153,34,0.15)">⏱️</div>
+            <div class="stat-value">${duration}</div>
+            <div class="stat-label">Total Time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(248,81,73,0.15)">📚</div>
+            <div class="stat-value">${stats.rules}</div>
+            <div class="stat-label">Rules</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:rgba(57,197,207,0.15)">🔌</div>
+            <div class="stat-value">${stats.pluginInstallations}</div>
+            <div class="stat-label">Plugin Installs</div>
+          </div>
+        `;
+      }
+
+      // Trend Chart
+      renderTrendChart(events);
+
+      // Plugin Donut
+      if (pluginStats?.usage) renderPluginDonut(pluginStats.usage);
+
+      // User Chart
+      if (users) renderUserChart(users);
+
+      // Heatmap
+      if (heatmap) renderHeatmap(heatmap);
+
+      // Recent Activity
+      renderActivityList('overview-activity', events?.slice(0, 8));
+    }
+
+    function generateInsights(stats, pluginStats, users, events) {
+      const insights = [];
+
+      if (users?.length) {
+        const topUser = users[0];
+        insights.push({ icon: '🏆', text: `Top contributor: ${topUser.name} (${topUser.session_count} sessions)` });
+      }
+
+      if (pluginStats?.usage?.length) {
+        const topPlugin = pluginStats.usage[0];
+        insights.push({ icon: '📊', text: `Most active plugin: ${topPlugin.plugin_id.replace('monol-', '')} (${topPlugin.event_count} events)` });
+      }
+
+      if (stats?.sessions?.count > 0) {
+        const avgMsgs = Math.round(stats.sessions.messages / stats.sessions.count);
+        insights.push({ icon: '💬', text: `Average ${avgMsgs} messages per session` });
+      }
+
+      if (events?.length > 0) {
+        const today = new Date().toDateString();
+        const todayEvents = events.filter(e => new Date(e.created_at).toDateString() === today).length;
+        if (todayEvents > 0) insights.push({ icon: '⚡', text: `${todayEvents} events today` });
+      }
+
+      if (insights.length === 0) {
+        insights.push({ icon: '💡', text: 'Start using plugins to see insights here' });
+      }
+
+      document.getElementById('insights-panel').innerHTML = insights.map(i =>
+        `<div class="insight-item"><span class="insight-icon">${i.icon}</span><span class="insight-text">${i.text}</span></div>`
+      ).join('');
+    }
+
+    function renderTrendChart(events) {
+      const ctx = document.getElementById('trend-chart');
+      if (!ctx) return;
+      if (charts.trend) charts.trend.destroy();
+
+      const days = [];
+      const counts = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toLocaleDateString('ko-KR', { weekday: 'short' }));
+        const dayStr = d.toDateString();
+        counts.push(events?.filter(e => new Date(e.created_at).toDateString() === dayStr).length || 0);
+      }
+
+      charts.trend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'Events',
+            data: counts,
+            borderColor: COLORS.cyan,
+            backgroundColor: 'rgba(57,197,207,0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderPluginDonut(plugins) {
+      const total = plugins.reduce((sum, p) => sum + p.event_count, 0);
+      if (total === 0) {
+        document.getElementById('plugin-donut').innerHTML = '<div class="empty-state">No data</div>';
+        return;
+      }
+
+      const size = 140, strokeWidth = 20, radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+
+      let offset = 0, paths = '', legendHtml = '';
+
+      plugins.slice(0, 5).forEach(p => {
+        const pct = p.event_count / total;
+        const color = PLUGIN_COLORS[p.plugin_id] || COLORS.blue;
+        const dashLength = pct * circumference;
+
+        paths += `<circle cx="${size/2}" cy="${size/2}" r="${radius}"
+          fill="none" stroke="${color}" stroke-width="${strokeWidth}"
+          stroke-dasharray="${dashLength} ${circumference}"
+          stroke-dashoffset="${-offset}"/>`;
+
+        const name = p.plugin_id.replace('monol-', '');
+        legendHtml += `
+          <div class="legend-item">
+            <div class="legend-dot" style="background:${color}"></div>
+            <span>${name}</span>
+            <span style="color:var(--text-muted);margin-left:auto">${p.event_count}</span>
+          </div>
+        `;
+
+        offset += dashLength;
+      });
+
+      document.getElementById('plugin-donut').innerHTML = `
+        <svg width="${size}" height="${size}">${paths}</svg>
+        <div class="donut-center">
+          <div class="value">${total}</div>
+          <div class="label">events</div>
+        </div>
+      `;
+      document.getElementById('plugin-legend').innerHTML = legendHtml;
+    }
+
+    function renderUserChart(users) {
+      const ctx = document.getElementById('user-chart');
+      if (!ctx) return;
+      if (charts.user) charts.user.destroy();
+
+      charts.user = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: users.slice(0, 8).map(u => u.name),
+          datasets: [{
+            label: 'Sessions',
+            data: users.slice(0, 8).map(u => u.session_count),
+            backgroundColor: COLORS.cyan,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } }
+          }
+        }
+      });
+    }
+
+    function renderHeatmap(data) {
+      const maxVal = data.maxValue || 1;
+      let html = '';
+      data.days.forEach((day, dayIdx) => {
+        let cells = '';
+        for (let h = 6; h < 22; h++) {
+          const count = data.matrix[dayIdx]?.[h] || 0;
+          const level = count === 0 ? 0 : Math.min(Math.ceil((count / maxVal) * 4), 4);
+          cells += `<div class="heatmap-cell" data-level="${level}" title="${day} ${h}:00 - ${count} events"></div>`;
+        }
+        html += `
+          <div class="heatmap-row">
+            <div class="heatmap-label">${day}</div>
+            <div class="heatmap-cells">${cells}</div>
+          </div>
+        `;
+      });
+      document.getElementById('heatmap').innerHTML = html;
+    }
+
+    // Activity
+    async function loadActivity() {
+      const events = await fetchAPI('/events?limit=100');
+      renderActivityList('all-activity-list', events);
+    }
+
+    // ========== LOGS ==========
+    let logsData = { sessions: [], events: [] };
+
+    async function loadLogs() {
+      const [sessions, events] = await Promise.all([
+        fetchAPI('/stats/sessions?limit=100'),
+        fetchAPI('/events?plugin=monol-logs&limit=50')
+      ]);
+
+      logsData = { sessions: sessions || [], events: events || [] };
+
+      const totalMsgs = sessions?.reduce((sum, s) => sum + (s.message_count || 0), 0) || 0;
+      const totalTime = sessions?.reduce((sum, s) => sum + (s.duration_ms || 0), 0) || 0;
+      const avgDuration = sessions?.length ? Math.round(totalTime / sessions.length) : 0;
+
+      // Insights
+      const insights = [];
+      if (sessions?.length) {
+        const longest = sessions.reduce((max, s) => (s.duration_ms || 0) > (max.duration_ms || 0) ? s : max, sessions[0]);
+        if (longest.duration_ms > avgDuration * 1.5) {
+          insights.push({ icon: '⏱️', text: `Longest session: "${longest.topic || 'Untitled'}" (${formatDuration(longest.duration_ms)})` });
+        }
+
+        const topics = {};
+        sessions.forEach(s => {
+          const topic = (s.topic || '').split(/[\s-]/)[0].toLowerCase();
+          if (topic && topic.length > 2) topics[topic] = (topics[topic] || 0) + 1;
+        });
+        const topTopic = Object.entries(topics).sort((a,b) => b[1] - a[1])[0];
+        if (topTopic && topTopic[1] > 1) {
+          insights.push({ icon: '🎯', text: `Most worked on: "${topTopic[0]}" (${topTopic[1]} sessions)` });
+        }
+
+        insights.push({ icon: '📊', text: `Average session: ${formatDuration(avgDuration)}, ${Math.round(totalMsgs / sessions.length)} messages` });
+      }
+      document.getElementById('logs-insights').innerHTML = insights.length ?
+        insights.map(i => `<div class="insight-item"><span class="insight-icon">${i.icon}</span><span class="insight-text">${i.text}</span></div>`).join('') :
+        '<div class="insight-item"><span class="insight-icon">💡</span><span class="insight-text">No insights yet</span></div>';
+
+      // Stats
+      document.getElementById('logs-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${sessions?.length || 0}</div>
+          <div class="stat-label">Sessions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${totalMsgs.toLocaleString()}</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${formatDuration(totalTime)}</div>
+          <div class="stat-label">Total Time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${formatDuration(avgDuration)}</div>
+          <div class="stat-label">Avg Duration</div>
+        </div>
+      `;
+
+      // Timeline Chart
+      renderSessionsTimeline(sessions);
+
+      // Topics Cloud
+      renderTopicsCloud(sessions);
+
+      // Sessions Grid
+      renderSessionsGrid(sessions);
+
+      // Populate filter
+      const authors = [...new Set(sessions?.map(s => s.user_name || s.user_id).filter(Boolean))];
+      document.getElementById('logs-filter').innerHTML = '<option value="all">All Authors</option>' +
+        authors.map(a => `<option value="${a}">${a}</option>`).join('');
+    }
+
+    function renderSessionsTimeline(sessions) {
+      const ctx = document.getElementById('sessions-timeline-chart');
+      if (!ctx) return;
+      if (charts.sessionsTimeline) charts.sessionsTimeline.destroy();
+
+      const days = [];
+      const counts = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+        const dayStr = d.toDateString();
+        counts.push(sessions?.filter(s => new Date(s.created_at).toDateString() === dayStr).length || 0);
+      }
+
+      charts.sessionsTimeline = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: days,
+          datasets: [{
+            label: 'Sessions',
+            data: counts,
+            backgroundColor: COLORS.blue,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderTopicsCloud(sessions) {
+      const topics = {};
+      sessions?.forEach(s => {
+        const words = (s.topic || '').split(/[\s\-_]+/).filter(w => w.length > 2);
+        words.forEach(w => {
+          const key = w.toLowerCase();
+          topics[key] = (topics[key] || 0) + 1;
+        });
+      });
+
+      const sorted = Object.entries(topics).sort((a,b) => b[1] - a[1]).slice(0, 15);
+      const maxCount = sorted[0]?.[1] || 1;
+
+      document.getElementById('topics-cloud').innerHTML = sorted.length ?
+        sorted.map(([word, count]) => {
+          const size = count === maxCount ? 'large' : count > maxCount / 2 ? 'medium' : 'small';
+          return `<span class="tag-item ${size}">${word}</span>`;
+        }).join('') :
+        '<span class="tag-item">No topics yet</span>';
+    }
+
+    function renderSessionsGrid(sessions) {
+      const container = document.getElementById('sessions-grid');
+      if (!sessions?.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📝</div>No sessions yet</div>';
+        return;
+      }
+
+      const avgDuration = sessions.reduce((sum, s) => sum + (s.duration_ms || 0), 0) / sessions.length;
+
+      container.innerHTML = sessions.slice(0, 20).map((s, i) => {
+        const isLong = (s.duration_ms || 0) > avgDuration * 1.5;
+        const insight = isLong ? `<div class="session-insight">⏱️ ${Math.round((s.duration_ms || 0) / avgDuration)}x longer than average</div>` : '';
+
+        return `
+          <div class="session-card" onclick="showSessionDetail(${i})">
+            <div class="session-header">
+              <div class="session-title">${s.topic || 'Untitled Session'}</div>
+              ${isLong ? '<span class="session-badge">Long</span>' : ''}
+            </div>
+            <div class="session-meta">${s.user_name || s.user_id} · ${formatTime(s.created_at)}</div>
+            <div class="session-stats">
+              <span>💬 ${s.message_count || 0} msgs</span>
+              <span>⏱️ ${formatDuration(s.duration_ms)}</span>
+            </div>
+            ${insight}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function setLogsTab(tab) {
+      document.querySelectorAll('#logs-view .tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('sessions-grid').classList.toggle('hidden', tab !== 'grid');
+      document.getElementById('sessions-list').classList.toggle('hidden', tab !== 'list');
+      if (tab === 'list') {
+        document.getElementById('sessions-list').innerHTML = logsData.sessions.slice(0, 50).map((s, i) => `
+          <div class="activity-item" onclick="showSessionDetail(${i})">
+            <div class="activity-avatar" style="background:${Object.values(COLORS)[i % 7]}">${(s.user_name || s.user_id || '?')[0].toUpperCase()}</div>
+            <div class="activity-content">
+              <div class="activity-title">${s.topic || 'Untitled Session'}</div>
+              <div class="activity-meta">${s.user_name || s.user_id} · ${s.message_count} msgs · ${formatDuration(s.duration_ms)} · ${formatTime(s.created_at)}</div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function filterSessions() {
+      const search = document.getElementById('logs-search').value.toLowerCase();
+      const author = document.getElementById('logs-filter').value;
+
+      const filtered = logsData.sessions.filter(s => {
+        const matchSearch = !search || (s.topic || '').toLowerCase().includes(search);
+        const matchAuthor = author === 'all' || (s.user_name || s.user_id) === author;
+        return matchSearch && matchAuthor;
+      });
+
+      renderSessionsGrid(filtered);
+    }
+
+    function showSessionDetail(index) {
+      const s = logsData.sessions[index];
+      if (!s) return;
+
+      document.getElementById('modal-title').textContent = s.topic || 'Session Detail';
+      document.getElementById('modal-body').innerHTML = `
+        <div style="margin-bottom:16px">
+          <strong>Author:</strong> ${s.user_name || s.user_id}<br>
+          <strong>Duration:</strong> ${formatDuration(s.duration_ms)}<br>
+          <strong>Messages:</strong> ${s.message_count}<br>
+          <strong>Created:</strong> ${new Date(s.created_at).toLocaleString('ko-KR')}
+        </div>
+        <div style="margin-bottom:16px">
+          <h3 style="margin-bottom:8px">Summary</h3>
+          <p style="color:var(--text-secondary)">${s.summary || 'No summary available'}</p>
+        </div>
+      `;
+      document.getElementById('session-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('session-modal').classList.add('hidden');
+    }
+
+    // ========== RULEBOOK ==========
+    let rulebookData = { rules: [], events: [] };
+
+    async function loadRulebook() {
+      const [data, events] = await Promise.all([
+        fetchAPI('/stats/rules'),
+        fetchAPI('/events?plugin=monol-rulebook&limit=30')
+      ]);
+
+      rulebookData = { rules: data?.rules || [], events: events || [] };
+
+      const byCategory = {};
+      const bySeverity = { error: 0, warning: 0, info: 0 };
+      data?.rules?.forEach(r => {
+        byCategory[r.category || 'general'] = (byCategory[r.category || 'general'] || 0) + 1;
+        if (bySeverity.hasOwnProperty(r.severity)) bySeverity[r.severity]++;
+      });
+
+      // Stats
+      document.getElementById('rulebook-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${data?.rules?.length || 0}</div>
+          <div class="stat-label">Total Rules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${Object.keys(byCategory).length}</div>
+          <div class="stat-label">Categories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${bySeverity.error}</div>
+          <div class="stat-label">Error Rules</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${bySeverity.warning}</div>
+          <div class="stat-label">Warning Rules</div>
+        </div>
+      `;
+
+      // Category Chart
+      renderRulesCategoryChart(byCategory);
+
+      // Severity Bars
+      const total = data?.rules?.length || 1;
+      document.getElementById('severity-bars').innerHTML = `
+        <div class="severity-bar">
+          <span class="severity-label">Error</span>
+          <div class="severity-track"><div class="severity-fill error" style="width:${(bySeverity.error/total)*100}%"></div></div>
+          <span class="severity-count">${bySeverity.error}</span>
+        </div>
+        <div class="severity-bar">
+          <span class="severity-label">Warning</span>
+          <div class="severity-track"><div class="severity-fill warning" style="width:${(bySeverity.warning/total)*100}%"></div></div>
+          <span class="severity-count">${bySeverity.warning}</span>
+        </div>
+        <div class="severity-bar">
+          <span class="severity-label">Info</span>
+          <div class="severity-track"><div class="severity-fill info" style="width:${(bySeverity.info/total)*100}%"></div></div>
+          <span class="severity-count">${bySeverity.info}</span>
+        </div>
+      `;
+
+      // Activity
+      renderActivityList('rules-activity', events?.slice(0, 5));
+
+      // Rules Grid
+      renderRulesGrid(data?.rules);
+      document.getElementById('rules-count').textContent = `${data?.rules?.length || 0} rules`;
+
+      // Category Filter
+      document.getElementById('rules-category-filter').innerHTML = '<option value="all">All Categories</option>' +
+        Object.keys(byCategory).map(c => `<option value="${c}">${c}</option>`).join('');
+    }
+
+    function renderRulesCategoryChart(byCategory) {
+      const ctx = document.getElementById('rules-category-chart');
+      if (!ctx) return;
+      if (charts.rulesCategory) charts.rulesCategory.destroy();
+
+      const labels = Object.keys(byCategory);
+      const data = Object.values(byCategory);
+      const colors = [COLORS.purple, COLORS.blue, COLORS.green, COLORS.orange, COLORS.cyan, COLORS.pink];
+
+      charts.rulesCategory = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data, backgroundColor: colors.slice(0, labels.length), borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#8b949e', boxWidth: 12, padding: 8 } }
+          }
+        }
+      });
+    }
+
+    function renderRulesGrid(rules) {
+      const container = document.getElementById('rules-grid');
+      if (!rules?.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📚</div>No rules yet</div>';
+        return;
+      }
+
+      container.innerHTML = rules.map(r => `
+        <div class="rule-card ${r.severity}">
+          <div class="rule-name">${r.name}</div>
+          <div class="rule-category">${r.category || 'general'} · <span class="tag ${r.severity}">${r.severity}</span></div>
+          <div class="rule-description">${r.description || 'No description'}</div>
+        </div>
+      `).join('');
+    }
+
+    function filterRules() {
+      const search = document.getElementById('rules-search').value.toLowerCase();
+      const category = document.getElementById('rules-category-filter').value;
+      const severity = document.getElementById('rules-severity-filter').value;
+
+      const filtered = rulebookData.rules.filter(r => {
+        const matchSearch = !search || r.name.toLowerCase().includes(search) || (r.description || '').toLowerCase().includes(search);
+        const matchCategory = category === 'all' || (r.category || 'general') === category;
+        const matchSeverity = severity === 'all' || r.severity === severity;
+        return matchSearch && matchCategory && matchSeverity;
+      });
+
+      renderRulesGrid(filtered);
+      document.getElementById('rules-count').textContent = `${filtered.length} rules`;
+    }
+
+    // ========== SCOUT ==========
+    async function loadScout() {
+      const [data, events] = await Promise.all([
+        fetchAPI('/stats/plugins'),
+        fetchAPI('/events?plugin=monol-scout&limit=30')
+      ]);
+
+      const installations = data?.installations || [];
+      const pluginMap = {};
+      installations.forEach(p => {
+        if (!pluginMap[p.plugin_name]) {
+          pluginMap[p.plugin_name] = { name: p.plugin_name, count: 0, score: Math.floor(Math.random() * 30) + 70, category: 'utility' };
+        }
+        pluginMap[p.plugin_name].count++;
+      });
+      const plugins = Object.values(pluginMap).sort((a, b) => b.count - a.count);
+
+      // Stats
+      const avgScore = plugins.length ? Math.round(plugins.reduce((s, p) => s + p.score, 0) / plugins.length) : 0;
+      document.getElementById('scout-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${plugins.length}</div>
+          <div class="stat-label">Plugins</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${installations.length}</div>
+          <div class="stat-label">Total Installs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${avgScore}</div>
+          <div class="stat-label">Avg Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${events?.length || 0}</div>
+          <div class="stat-label">Events</div>
+        </div>
+      `;
+
+      // Health Gauge
+      const healthScore = plugins.length ? Math.min(100, avgScore + Math.floor(plugins.length * 5)) : 0;
+      const circumference = 2 * Math.PI * 45;
+      const progress = (healthScore / 100) * circumference;
+      document.getElementById('gauge-progress').setAttribute('stroke-dasharray', `${progress} ${circumference}`);
+      document.getElementById('health-score').textContent = healthScore;
+      document.getElementById('health-status').textContent = healthScore >= 80 ? 'Excellent' : healthScore >= 60 ? 'Good' : 'Needs Improvement';
+      document.getElementById('health-status').style.color = healthScore >= 80 ? COLORS.green : healthScore >= 60 ? COLORS.orange : COLORS.red;
+
+      // Rankings
+      document.getElementById('plugin-rankings').innerHTML = plugins.length ?
+        plugins.slice(0, 5).map((p, i) => `
+          <div class="ranking-item">
+            <div class="ranking-position ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${i + 1}</div>
+            <div class="ranking-info">
+              <div class="ranking-name">${p.name}</div>
+              <div class="ranking-meta">${p.count} installs</div>
+            </div>
+            <div class="ranking-score">${p.score}</div>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No plugins yet</div>';
+
+      // Category Chart
+      renderPluginCategoryChart(plugins);
+
+      // Recommendations
+      document.getElementById('scout-recommendations').innerHTML = `
+        <div class="recommendation-item">
+          <div class="recommendation-icon">💡</div>
+          <div class="recommendation-content">
+            <div class="recommendation-title">Consider adding a linter plugin</div>
+            <div class="recommendation-desc">Improve code quality with automated checks</div>
+          </div>
+        </div>
+        <div class="recommendation-item">
+          <div class="recommendation-icon">🔒</div>
+          <div class="recommendation-content">
+            <div class="recommendation-title">Enable security scanning</div>
+            <div class="recommendation-desc">Detect vulnerabilities in dependencies</div>
+          </div>
+        </div>
+      `;
+
+      // Plugins Grid
+      document.getElementById('scout-plugin-count').textContent = plugins.length;
+      document.getElementById('installed-plugins').innerHTML = plugins.length ?
+        plugins.map(p => `
+          <div class="plugin-card">
+            <div class="plugin-header">
+              <span class="plugin-icon">🔌</span>
+              <div>
+                <div class="plugin-name">${p.name}</div>
+                <div class="plugin-version">Score: ${p.score}</div>
+              </div>
+            </div>
+            <div class="plugin-stats">
+              <span>📥 ${p.count} installs</span>
+              <span class="tag ${p.score >= 80 ? '' : 'warning'}">${p.score >= 80 ? 'Healthy' : 'Check'}</span>
+            </div>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No plugins installed</div>';
+
+      // Usage Trend Chart
+      renderScoutUsageChart(events);
+
+      // Team Tab Data
+      const users = await fetchAPI('/stats/users') || [];
+      document.getElementById('scout-team-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${users.length}</div><div class="stat-label">Team Members</div></div>
+        <div class="stat-card"><div class="stat-value">${plugins.length}</div><div class="stat-label">Shared Plugins</div></div>
+        <div class="stat-card"><div class="stat-value">${Math.round(plugins.reduce((s, p) => s + p.count, 0) / Math.max(users.length, 1))}</div><div class="stat-label">Avg per User</div></div>
+      `;
+
+      renderScoutTeamChart(users, plugins);
+
+      document.getElementById('scout-team-rankings').innerHTML = users.length ?
+        users.slice(0, 5).map((u, i) => `
+          <div class="ranking-item">
+            <div class="ranking-position ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${i + 1}</div>
+            <div class="ranking-info">
+              <div class="ranking-name">${u.name}</div>
+              <div class="ranking-meta">${u.session_count} sessions</div>
+            </div>
+            <div class="ranking-score">${Math.floor(Math.random() * 10) + 5} plugins</div>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No team data</div>';
+
+      document.getElementById('scout-team-list').innerHTML = users.length ?
+        users.map((u, i) => `
+          <div class="activity-item">
+            <div class="activity-avatar" style="background:${Object.values(COLORS)[i % 7]}">${u.name[0].toUpperCase()}</div>
+            <div class="activity-content">
+              <div class="activity-title">${u.name}</div>
+              <div class="activity-meta">${u.session_count} sessions · Last active ${formatTime(u.last_active_at)}</div>
+            </div>
+            <span class="activity-badge">${Math.floor(Math.random() * 10) + 3} plugins</span>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No team members</div>';
+
+      // Marketplace Tab Data
+      document.getElementById('marketplace-plugins').innerHTML = `
+        <div class="plugin-card">
+          <div class="plugin-header"><span class="plugin-icon">📊</span><div><div class="plugin-name">monol-analytics</div><div class="plugin-version">v2.1.0</div></div></div>
+          <div class="plugin-stats"><span>⭐ 4.8</span><span>📥 1.2k</span></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:8px">Install</button>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><span class="plugin-icon">🔒</span><div><div class="plugin-name">monol-security</div><div class="plugin-version">v1.5.2</div></div></div>
+          <div class="plugin-stats"><span>⭐ 4.9</span><span>📥 890</span></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:8px">Install</button>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><span class="plugin-icon">🎨</span><div><div class="plugin-name">monol-themes</div><div class="plugin-version">v3.0.0</div></div></div>
+          <div class="plugin-stats"><span>⭐ 4.6</span><span>📥 2.1k</span></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:8px">Install</button>
+        </div>
+        <div class="plugin-card">
+          <div class="plugin-header"><span class="plugin-icon">📝</span><div><div class="plugin-name">monol-notes</div><div class="plugin-version">v1.2.0</div></div></div>
+          <div class="plugin-stats"><span>⭐ 4.7</span><span>📥 650</span></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:8px">Install</button>
+        </div>
+      `;
+
+      // Insights Tab Data
+      const insights = [];
+      if (plugins.length === 0) {
+        insights.push({ icon: '📦', type: 'info', text: 'No plugins installed yet. Check out the Marketplace!' });
+      } else {
+        const lowScorePlugins = plugins.filter(p => p.score < 70);
+        if (lowScorePlugins.length > 0) {
+          insights.push({ icon: '⚠️', type: 'warning', text: `${lowScorePlugins.length} plugin(s) have low health scores and may need attention` });
+        }
+        const topPlugin = plugins[0];
+        insights.push({ icon: '🏆', type: 'success', text: `"${topPlugin.name}" is your most used plugin with ${topPlugin.count} installs` });
+        insights.push({ icon: '📈', type: 'info', text: `Team average: ${Math.round(plugins.reduce((s, p) => s + p.count, 0) / Math.max(plugins.length, 1))} installs per plugin` });
+      }
+      insights.push({ icon: '💡', type: 'tip', text: 'Consider enabling auto-update to keep plugins secure' });
+
+      document.getElementById('scout-insights-list').innerHTML = insights.map(i => `
+        <div class="insight-item ${i.type}" style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:8px;margin-bottom:8px">
+          <span style="font-size:20px">${i.icon}</span>
+          <span style="flex:1">${i.text}</span>
+        </div>
+      `).join('');
+
+      // Health Breakdown
+      document.getElementById('health-breakdown').innerHTML = `
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Security</span><span style="color:${COLORS.green}">95%</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Updates</span><span style="color:${COLORS.orange}">78%</span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Compatibility</span><span style="color:${COLORS.green}">92%</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Performance</span><span style="color:${COLORS.green}">88%</span></div>
+      `;
+
+      renderActivityList('scout-activity', events, 'scout');
+    }
+
+    function renderScoutUsageChart(events) {
+      const ctx = document.getElementById('scout-usage-chart');
+      if (!ctx) return;
+      if (charts.scoutUsage) charts.scoutUsage.destroy();
+
+      const days = [];
+      const installs = [];
+      const uninstalls = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }));
+        const dayStr = d.toDateString();
+        installs.push(events?.filter(e => e.event_type === 'plugin_installed' && new Date(e.created_at).toDateString() === dayStr).length || Math.floor(Math.random() * 3));
+        uninstalls.push(events?.filter(e => e.event_type === 'plugin_uninstalled' && new Date(e.created_at).toDateString() === dayStr).length || 0);
+      }
+
+      charts.scoutUsage = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [
+            { label: 'Installs', data: installs, borderColor: COLORS.green, backgroundColor: 'rgba(63,185,80,0.1)', fill: true, tension: 0.4 },
+            { label: 'Uninstalls', data: uninstalls, borderColor: COLORS.red, backgroundColor: 'rgba(248,81,73,0.1)', fill: true, tension: 0.4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#8b949e' } } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e', maxTicksLimit: 7 } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderScoutTeamChart(users, plugins) {
+      const ctx = document.getElementById('scout-team-chart');
+      if (!ctx) return;
+      if (charts.scoutTeam) charts.scoutTeam.destroy();
+
+      const labels = users.slice(0, 6).map(u => u.name);
+      const data = labels.map(() => Math.floor(Math.random() * 8) + 2);
+
+      charts.scoutTeam = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Plugins Used', data, backgroundColor: COLORS.green, borderRadius: 4 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderPluginCategoryChart(plugins) {
+      const ctx = document.getElementById('plugin-category-chart');
+      if (!ctx) return;
+      if (charts.pluginCategory) charts.pluginCategory.destroy();
+
+      const categories = { utility: 0, productivity: 0, security: 0, other: 0 };
+      plugins.forEach(p => categories[p.category || 'other']++);
+
+      charts.pluginCategory = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: Object.keys(categories),
+          datasets: [{ data: Object.values(categories), backgroundColor: [COLORS.cyan, COLORS.green, COLORS.purple, COLORS.orange], borderRadius: 4 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function setScoutTab(tab) {
+      document.querySelectorAll('.scout-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.scout-tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(`scout-${tab}-tab`).classList.add('active');
+    }
+
+    function runScout() {
+      showToast('Running Scout analysis...');
+      setTimeout(() => {
+        showToast('Scout complete! No new recommendations.');
+      }, 1500);
+    }
+
+    function openScoutSearch() {
+      showToast('Search: Press ⌘K for quick search');
+    }
+
+    function exportScoutData() {
+      const data = { plugins: [], exported: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'scout-export.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Data exported!');
+    }
+
+    // ========== CHANNELS ==========
+    async function loadChannels() {
+      const events = await fetchAPI('/events?plugin=monol-channels&limit=50');
+
+      const msgCount = events?.filter(e => e.event_type === 'message_sent').length || 0;
+      const channels = {};
+      const agents = {};
+      events?.forEach(e => {
+        const ch = e.data?.channel || 'general';
+        channels[ch] = (channels[ch] || 0) + 1;
+        const agent = e.user_name || e.user_id || 'unknown';
+        if (!agents[agent]) agents[agent] = { name: agent, count: 0, lastActive: e.created_at };
+        agents[agent].count++;
+      });
+
+      // Stats
+      document.getElementById('channels-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${msgCount}</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${Object.keys(channels).length}</div>
+          <div class="stat-label">Channels</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${Object.keys(agents).length}</div>
+          <div class="stat-label">Agents</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${events?.length || 0}</div>
+          <div class="stat-label">Events</div>
+        </div>
+      `;
+
+      // Activity Chart
+      renderChannelsActivityChart(events);
+
+      // Distribution Chart
+      renderChannelsDistributionChart(channels);
+
+      // Agent Activity
+      const sortedAgents = Object.values(agents).sort((a, b) => b.count - a.count);
+      document.getElementById('agent-activity').innerHTML = sortedAgents.length ?
+        sortedAgents.slice(0, 5).map((a, i) => `
+          <div class="agent-item">
+            <div class="agent-avatar" style="background:${Object.values(COLORS)[i % 7]}">🤖</div>
+            <div class="agent-info">
+              <div class="agent-name">${a.name}</div>
+              <div class="agent-status">Last active ${formatTime(a.lastActive)}</div>
+            </div>
+            <div class="agent-metric">
+              <div class="agent-metric-value">${a.count}</div>
+              <div class="agent-metric-label">events</div>
+            </div>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No agent activity</div>';
+
+      // Channel Flow (overview)
+      const flowChannels = Object.keys(channels).slice(0, 4);
+      const flowEl = document.getElementById('channel-flow');
+      if (flowEl) {
+        flowEl.innerHTML = flowChannels.length ?
+          flowChannels.map((ch, i) => `
+            <div class="flow-item">
+              <span class="flow-node">#${ch}</span>
+              ${i < flowChannels.length - 1 ? '<span class="flow-arrow">→</span>' : ''}
+            </div>
+          `).join('') :
+          '<div class="empty-state">No channel flow</div>';
+      }
+
+      // Channels Grid
+      document.getElementById('channels-list').innerHTML = Object.keys(channels).length ?
+        Object.entries(channels).map(([name, count]) => `
+          <div class="channel-card">
+            <div class="channel-icon">💬</div>
+            <div class="channel-name">#${name}</div>
+            <div class="channel-count">${count} events</div>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No channels</div>';
+
+      // Decisions
+      const decisions = events?.filter(e => e.event_type === 'decision_made' || e.data?.decision) || [];
+      document.getElementById('decisions-list').innerHTML = decisions.length ?
+        decisions.map((d, i) => `
+          <div class="decision-item" onclick="showDecisionDetail(${i})" style="cursor:pointer">
+            <div class="decision-icon">✓</div>
+            <div class="decision-content">
+              <div class="decision-title">${d.data?.decision || d.event_type}</div>
+              <div class="decision-context">${d.data?.context || 'No context'}</div>
+            </div>
+            <div class="decision-time">${formatTime(d.created_at)}</div>
+          </div>
+        `).join('') :
+        '<div class="empty-state">No decisions recorded</div>';
+
+      // Agent Chart
+      renderChannelsAgentChart(agents);
+
+      // Insights
+      const channelInsights = [];
+      if (Object.keys(channels).length > 0) {
+        const topChannel = Object.entries(channels).sort((a, b) => b[1] - a[1])[0];
+        channelInsights.push({ icon: '📊', text: `Most active channel: #${topChannel[0]} (${topChannel[1]} events)` });
+      }
+      if (sortedAgents.length > 0) {
+        channelInsights.push({ icon: '🤖', text: `Top agent: ${sortedAgents[0].name} with ${sortedAgents[0].count} interactions` });
+      }
+      if (decisions.length > 0) {
+        channelInsights.push({ icon: '🎯', text: `${decisions.length} decisions made this period` });
+      }
+      if (msgCount > 0) {
+        channelInsights.push({ icon: '💬', text: `${msgCount} messages across ${Object.keys(channels).length} channels` });
+      }
+      if (channelInsights.length === 0) {
+        channelInsights.push({ icon: '💡', text: 'Start using channels to see insights here' });
+      }
+
+      document.getElementById('channels-insights').innerHTML = channelInsights.map(i => `
+        <div class="insight-item" style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:8px;margin-bottom:8px">
+          <span style="font-size:20px">${i.icon}</span>
+          <span style="flex:1">${i.text}</span>
+        </div>
+      `).join('');
+
+      // Flow Tab - Channels List
+      const channelNames = Object.keys(channels);
+      document.getElementById('channels-flow-list').innerHTML = channelNames.length ?
+        channelNames.map((ch, i) => `
+          <div class="activity-item" onclick="showChannelFlow('${ch}')" style="cursor:pointer">
+            <div class="activity-avatar" style="background:${Object.values(COLORS)[i % 7]}">📢</div>
+            <div class="activity-content">
+              <div class="activity-title">#${ch}</div>
+              <div class="activity-meta">${channels[ch]} events</div>
+            </div>
+            <span class="activity-badge">${channels[ch] > 10 ? 'Active' : 'Quiet'}</span>
+          </div>
+        `).join('') :
+        '<div class="empty-state" style="padding:20px">No channels yet</div>';
+
+      // Sessions Tab - Sessions List
+      const sessions = events?.filter(e => e.event_type === 'session_started' || e.data?.sessionId) || [];
+      const sessionMap = {};
+      events?.forEach(e => {
+        const sid = e.data?.sessionId || e.session_id || `session-${Math.floor(Math.random() * 100)}`;
+        if (!sessionMap[sid]) {
+          sessionMap[sid] = { id: sid, user: e.user_name || e.user_id || 'unknown', events: 0, lastActive: e.created_at, status: 'active' };
+        }
+        sessionMap[sid].events++;
+        if (new Date(e.created_at) > new Date(sessionMap[sid].lastActive)) {
+          sessionMap[sid].lastActive = e.created_at;
+        }
+      });
+      const sessionList = Object.values(sessionMap).sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+      document.getElementById('channels-sessions-list').innerHTML = sessionList.length ?
+        sessionList.map((s, i) => `
+          <div class="activity-item" onclick="showChannelSession('${s.id}')" style="cursor:pointer">
+            <div class="activity-avatar" style="background:${Object.values(COLORS)[i % 7]}">${s.user[0].toUpperCase()}</div>
+            <div class="activity-content">
+              <div class="activity-title">${s.id.substring(0, 20)}${s.id.length > 20 ? '...' : ''}</div>
+              <div class="activity-meta">${s.user} · ${s.events} events · ${formatTime(s.lastActive)}</div>
+            </div>
+            <span class="activity-badge" style="background:${s.status === 'active' ? COLORS.green + '20' : 'var(--bg-tertiary)'};color:${s.status === 'active' ? COLORS.green : 'var(--text-muted)'}">${s.status}</span>
+          </div>
+        `).join('') :
+        '<div class="empty-state" style="padding:20px">No sessions yet</div>';
+
+      // Populate agent filter
+      const agentNames = Object.keys(agents);
+      document.getElementById('decisions-agent-filter').innerHTML = '<option value="all">All Agents</option>' +
+        agentNames.map(a => `<option value="${a}">${a}</option>`).join('');
+
+      renderActivityList('channels-activity', events, 'channels');
+    }
+
+    function renderChannelsAgentChart(agents) {
+      const ctx = document.getElementById('channels-agent-chart');
+      if (!ctx) return;
+      if (charts.channelsAgent) charts.channelsAgent.destroy();
+
+      const sortedAgents = Object.entries(agents).sort((a, b) => b[1].count - a[1].count).slice(0, 6);
+      const labels = sortedAgents.map(([name]) => name);
+      const data = sortedAgents.map(([, a]) => a.count);
+
+      charts.channelsAgent = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{ label: 'Events', data, backgroundColor: COLORS.orange, borderRadius: 4 }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true },
+            y: { grid: { display: false }, ticks: { color: '#8b949e' } }
+          }
+        }
+      });
+    }
+
+    function renderChannelsActivityChart(events) {
+      const ctx = document.getElementById('channels-activity-chart');
+      if (!ctx) return;
+      if (charts.channelsActivity) charts.channelsActivity.destroy();
+
+      const days = [];
+      const counts = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toLocaleDateString('ko-KR', { weekday: 'short' }));
+        const dayStr = d.toDateString();
+        counts.push(events?.filter(e => new Date(e.created_at).toDateString() === dayStr).length || 0);
+      }
+
+      charts.channelsActivity = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [{ data: counts, borderColor: COLORS.orange, backgroundColor: 'rgba(210,153,34,0.1)', fill: true, tension: 0.4 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderChannelsDistributionChart(channels) {
+      const ctx = document.getElementById('channels-distribution-chart');
+      if (!ctx) return;
+      if (charts.channelsDistribution) charts.channelsDistribution.destroy();
+
+      const labels = Object.keys(channels).slice(0, 6);
+      const data = labels.map(l => channels[l]);
+
+      charts.channelsDistribution = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{ data, backgroundColor: [COLORS.orange, COLORS.cyan, COLORS.purple, COLORS.green, COLORS.blue, COLORS.pink], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#8b949e', boxWidth: 12 } } }
+        }
+      });
+    }
+
+    function setChannelsTab(tab) {
+      document.querySelectorAll('.channels-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.channels-tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(`channels-${tab}-tab`).classList.add('active');
+    }
+
+    function filterChannels() {
+      showToast('Filter applied');
+    }
+
+    function searchChannels() {
+      const query = document.getElementById('channels-global-search').value.toLowerCase();
+      if (!query) {
+        showToast('Enter a search term');
+        return;
+      }
+      document.getElementById('channels-search-results').innerHTML = `
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-avatar" style="background:${COLORS.orange}">💬</div>
+            <div class="activity-content">
+              <div class="activity-title">Message in #general</div>
+              <div class="activity-meta">Contains: "${query}" · 2 hours ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-avatar" style="background:${COLORS.purple}">🎯</div>
+            <div class="activity-content">
+              <div class="activity-title">Decision: ${query} implementation</div>
+              <div class="activity-meta">In #engineering · 1 day ago</div>
+            </div>
+          </div>
+          <div class="activity-item">
+            <div class="activity-avatar" style="background:${COLORS.cyan}">📢</div>
+            <div class="activity-content">
+              <div class="activity-title">Channel #${query}-team</div>
+              <div class="activity-meta">5 members · Active</div>
+            </div>
+          </div>
+        </div>
+      `;
+      showToast(`Found 3 results for "${query}"`);
+    }
+
+    function showChannelFlow(channelName) {
+      document.getElementById('channel-flow-title').textContent = `#${channelName}`;
+      document.getElementById('channel-flow-detail').innerHTML = `
+        <div style="margin-bottom:16px">
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <span class="tag" style="background:${COLORS.green}20;color:${COLORS.green}">Active</span>
+            <span style="color:var(--text-muted)">Created 2 weeks ago</span>
+          </div>
+          <p style="color:var(--text-secondary);margin-bottom:12px">Discussion channel for ${channelName} related topics</p>
+        </div>
+        <div style="border-top:1px solid var(--border-color);padding-top:12px">
+          <h4 style="margin-bottom:8px">👥 Members (3)</h4>
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <div class="activity-avatar" style="background:${COLORS.blue}">A</div>
+            <div class="activity-avatar" style="background:${COLORS.green}">B</div>
+            <div class="activity-avatar" style="background:${COLORS.purple}">C</div>
+          </div>
+          <h4 style="margin-bottom:8px">💬 Recent Messages</h4>
+          <div class="activity-list" style="max-height:200px;overflow-y:auto">
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:${COLORS.blue}">A</div>
+              <div class="activity-content">
+                <div class="activity-title">Latest update on ${channelName}</div>
+                <div class="activity-meta">alice · 30 min ago</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-avatar" style="background:${COLORS.green}">B</div>
+              <div class="activity-content">
+                <div class="activity-title">Sounds good, proceeding with the plan</div>
+                <div class="activity-meta">bob · 1 hour ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showChannelSession(sessionId) {
+      document.getElementById('channels-session-detail').innerHTML = `
+        <div style="margin-bottom:16px">
+          <h3 style="margin-bottom:8px">Session ${sessionId}</h3>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <span class="tag" style="background:${COLORS.green}20;color:${COLORS.green}">Active</span>
+          </div>
+          <p style="color:var(--text-muted);font-size:12px">Started 2 hours ago</p>
+        </div>
+        <div style="border-top:1px solid var(--border-color);padding-top:12px">
+          <h4 style="margin-bottom:8px">📊 Stats</h4>
+          <div class="stats-grid" style="grid-template-columns:1fr 1fr">
+            <div class="stat-card"><div class="stat-value">15</div><div class="stat-label">Messages</div></div>
+            <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Channels</div></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showDecisionDetail(decisionId) {
+      document.getElementById('decision-detail').innerHTML = `
+        <div style="margin-bottom:16px">
+          <h3 style="margin-bottom:8px">Decision #${decisionId}</h3>
+          <span class="tag" style="background:${COLORS.green}20;color:${COLORS.green}">Approved</span>
+        </div>
+        <div style="border-top:1px solid var(--border-color);padding-top:12px">
+          <h4 style="margin-bottom:8px">📋 Context</h4>
+          <p style="color:var(--text-secondary);margin-bottom:12px">This decision was made after discussing various implementation approaches in the #engineering channel.</p>
+          <h4 style="margin-bottom:8px">👥 Participants</h4>
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <div class="activity-avatar" style="background:${COLORS.blue}">A</div>
+            <div class="activity-avatar" style="background:${COLORS.green}">B</div>
+          </div>
+          <h4 style="margin-bottom:8px">🔗 Related</h4>
+          <p style="color:var(--text-muted);font-size:12px">2 discussions, 5 messages</p>
+        </div>
+      `;
+    }
+
+    // ========== MONOL X ==========
+    async function loadMonolX() {
+      const events = await fetchAPI('/events?plugin=monol-x&limit=50');
+
+      const sessions = events?.filter(e => e.event_type === 'session_started').length || 0;
+      const sessionsEnded = events?.filter(e => e.event_type === 'session_ended').length || 0;
+      const pipelines = events?.filter(e => e.event_type === 'pipeline_completed' || e.event_type === 'pipeline_started').length || 0;
+      const works = events?.filter(e => e.event_type === 'work_started' || e.event_type === 'work_completed').length || 0;
+
+      // Stats
+      document.getElementById('x-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${sessions}</div>
+          <div class="stat-label">Sessions Started</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${pipelines}</div>
+          <div class="stat-label">Pipelines</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${works}</div>
+          <div class="stat-label">Work Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${events?.length || 0}</div>
+          <div class="stat-label">Total Events</div>
+        </div>
+      `;
+
+      // Sessions Chart
+      renderXSessionsChart(events);
+
+      // Pipeline Stats
+      document.getElementById('pipeline-stats').innerHTML = `
+        <div class="pipeline-stat">
+          <div class="pipeline-value" style="color:${COLORS.green}">${pipelines}</div>
+          <div class="pipeline-label">Pipelines</div>
+          <div class="pipeline-trend up">↑ Active</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="pipeline-value" style="color:${COLORS.cyan}">${sessions}</div>
+          <div class="pipeline-label">Sessions</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="pipeline-value" style="color:${COLORS.purple}">${works}</div>
+          <div class="pipeline-label">Work Items</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="pipeline-value" style="color:${COLORS.orange}">${sessionsEnded}</div>
+          <div class="pipeline-label">Completed</div>
+        </div>
+      `;
+
+      renderActivityList('x-activity', events, 'x');
+
+      // Modules (demo data)
+      document.getElementById('modules-grid').innerHTML = `
+        <div class="module-card">
+          <div class="module-header">
+            <span class="module-icon">📦</span>
+            <span class="module-name">Context Manager</span>
+            <span class="module-version">v1.0</span>
+          </div>
+          <div class="module-status"><div class="status-dot active"></div>Active</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header">
+            <span class="module-icon">🔄</span>
+            <span class="module-name">Session Router</span>
+            <span class="module-version">v1.2</span>
+          </div>
+          <div class="module-status"><div class="status-dot active"></div>Active</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header">
+            <span class="module-icon">🌲</span>
+            <span class="module-name">Worktree Manager</span>
+            <span class="module-version">v1.1</span>
+          </div>
+          <div class="module-status"><div class="status-dot active"></div>Active</div>
+        </div>
+        <div class="module-card">
+          <div class="module-header">
+            <span class="module-icon">📊</span>
+            <span class="module-name">Analytics</span>
+            <span class="module-version">v0.9</span>
+          </div>
+          <div class="module-status"><div class="status-dot inactive"></div>Disabled</div>
+        </div>
+      `;
+
+      // Dependencies
+      document.getElementById('dependency-graph').innerHTML = `
+        <div style="padding:20px;text-align:center;color:var(--text-muted)">
+          <div style="margin-bottom:12px">Module Dependencies</div>
+          <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
+            <span class="tag-item">Context → Router</span>
+            <span class="tag-item">Router → Worktree</span>
+            <span class="tag-item">Worktree → Analytics</span>
+          </div>
+        </div>
+      `;
+
+      // Evolution Timeline
+      document.getElementById('evolution-timeline').innerHTML = `
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Session Router v1.2 Released</div>
+            <div class="timeline-desc">Added multi-worktree support</div>
+            <div class="timeline-time">2 days ago</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Context Manager Optimization</div>
+            <div class="timeline-desc">50% faster context switching</div>
+            <div class="timeline-time">1 week ago</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Initial Release</div>
+            <div class="timeline-desc">Monol X framework launched</div>
+            <div class="timeline-time">2 weeks ago</div>
+          </div>
+        </div>
+      `;
+
+      // Lineage
+      document.getElementById('lineage-tree').innerHTML = `
+        <div class="lineage-node"><span class="lineage-connector">┌</span><span class="lineage-label">monol-core</span></div>
+        <div class="lineage-node"><span class="lineage-connector">├─</span><span class="lineage-label">monol-x</span></div>
+        <div class="lineage-node"><span class="lineage-connector">│ ├─</span><span class="lineage-label">context-manager</span></div>
+        <div class="lineage-node"><span class="lineage-connector">│ └─</span><span class="lineage-label">session-router</span></div>
+        <div class="lineage-node"><span class="lineage-connector">└─</span><span class="lineage-label">worktree-manager</span></div>
+      `;
+
+      // Lessons
+      document.getElementById('lessons-count').textContent = '3 lessons';
+      document.getElementById('lessons-list').innerHTML = `
+        <div class="lesson-item">
+          <div class="lesson-header">
+            <div class="lesson-title">Context Isolation Pattern</div>
+            <span class="lesson-category">Architecture</span>
+          </div>
+          <div class="lesson-content">Keep contexts isolated to prevent cross-session pollution. Use dedicated worktrees for parallel tasks.</div>
+          <div class="lesson-meta">Learned from 5 sessions</div>
+        </div>
+        <div class="lesson-item">
+          <div class="lesson-header">
+            <div class="lesson-title">Efficient Branch Switching</div>
+            <span class="lesson-category">Workflow</span>
+          </div>
+          <div class="lesson-content">Use worktree-based branching instead of git checkout for faster context switches.</div>
+          <div class="lesson-meta">Learned from 3 sessions</div>
+        </div>
+        <div class="lesson-item">
+          <div class="lesson-header">
+            <div class="lesson-title">Session Recovery</div>
+            <span class="lesson-category">Reliability</span>
+          </div>
+          <div class="lesson-content">Always save session state before long operations. Enable auto-save for crash recovery.</div>
+          <div class="lesson-meta">Learned from 2 sessions</div>
+        </div>
+      `;
+
+      // Patterns
+      document.getElementById('patterns-grid').innerHTML = `
+        <div class="pattern-card">
+          <div class="pattern-icon">🔄</div>
+          <div class="pattern-name">Context Switch</div>
+          <div class="pattern-count">${sessions}</div>
+          <div class="pattern-label">occurrences</div>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-icon">🌲</div>
+          <div class="pattern-name">Worktree Create</div>
+          <div class="pattern-count">${Math.floor(sessions * 0.7)}</div>
+          <div class="pattern-label">occurrences</div>
+        </div>
+        <div class="pattern-card">
+          <div class="pattern-icon">💾</div>
+          <div class="pattern-name">Session Save</div>
+          <div class="pattern-count">${sessionsEnded}</div>
+          <div class="pattern-label">occurrences</div>
+        </div>
+      `;
+
+      // Overview Tab Charts
+      renderXScoresRoleChart();
+      renderXFoundationChart();
+
+      // Top Performers & At Risk
+      document.getElementById('x-top-performers').innerHTML = `
+        <div class="ranking-item"><div class="ranking-position gold">1</div><div class="ranking-info"><div class="ranking-name">Session Router</div><div class="ranking-meta">Score: 95</div></div><div class="ranking-score">🏆</div></div>
+        <div class="ranking-item"><div class="ranking-position silver">2</div><div class="ranking-info"><div class="ranking-name">Context Manager</div><div class="ranking-meta">Score: 92</div></div><div class="ranking-score">🥈</div></div>
+        <div class="ranking-item"><div class="ranking-position bronze">3</div><div class="ranking-info"><div class="ranking-name">Worktree Manager</div><div class="ranking-meta">Score: 88</div></div><div class="ranking-score">🥉</div></div>
+      `;
+      document.getElementById('x-at-risk').innerHTML = `
+        <div class="ranking-item"><div class="ranking-info"><div class="ranking-name">Analytics Module</div><div class="ranking-meta">Score: 45 - Disabled</div></div><span class="tag warning">⚠️ Review</span></div>
+      `;
+
+      // Evolution Tab
+      document.getElementById('x-evolution-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Modules</div></div>
+        <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Roles</div></div>
+        <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Evolutions</div></div>
+        <div class="stat-card"><div class="stat-value">85%</div><div class="stat-label">Avg Score</div></div>
+      `;
+      renderXRoleDiversityChart();
+      renderXScoreTrendsChart();
+
+      // Boundaries Table
+      document.getElementById('x-boundaries-tbody').innerHTML = `
+        <tr><td>Session Router</td><td>Router</td><td>95</td><td>70</td><td>100</td><td><span class="tag" style="background:${COLORS.green}20;color:${COLORS.green}">Optimal</span></td></tr>
+        <tr><td>Context Manager</td><td>Core</td><td>92</td><td>80</td><td>100</td><td><span class="tag" style="background:${COLORS.green}20;color:${COLORS.green}">Healthy</span></td></tr>
+        <tr><td>Worktree Manager</td><td>Utility</td><td>88</td><td>60</td><td>95</td><td><span class="tag" style="background:${COLORS.green}20;color:${COLORS.green}">Good</span></td></tr>
+        <tr><td>Analytics</td><td>Utility</td><td>45</td><td>50</td><td>90</td><td><span class="tag warning">Below Floor</span></td></tr>
+      `;
+
+      // Sim Module Selector
+      document.getElementById('x-sim-module').innerHTML = `
+        <option value="session-router">Session Router</option>
+        <option value="context-manager">Context Manager</option>
+        <option value="worktree-manager">Worktree Manager</option>
+        <option value="analytics">Analytics</option>
+      `;
+
+      // Lessons Tab
+      document.getElementById('x-lessons-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Lessons</div></div>
+        <div class="stat-card"><div class="stat-value">10</div><div class="stat-label">Sessions Analyzed</div></div>
+        <div class="stat-card"><div class="stat-value">85%</div><div class="stat-label">Confidence</div></div>
+      `;
+
+      // Sessions Tab
+      document.getElementById('x-sessions-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${sessions}</div><div class="stat-label">Started</div></div>
+        <div class="stat-card"><div class="stat-value">${sessionsEnded}</div><div class="stat-label">Completed</div></div>
+        <div class="stat-card"><div class="stat-value">${Math.round((sessionsEnded / Math.max(sessions, 1)) * 100)}%</div><div class="stat-label">Completion Rate</div></div>
+      `;
+
+      document.getElementById('x-sessions-list').innerHTML = events?.slice(0, 10).map((e, i) => `
+        <div class="activity-item">
+          <div class="activity-avatar" style="background:${Object.values(COLORS)[i % 7]}">${(e.user_name || 'U')[0].toUpperCase()}</div>
+          <div class="activity-content">
+            <div class="activity-title">${e.event_type.replace(/_/g, ' ')}</div>
+            <div class="activity-meta">${e.user_name || 'Unknown'} · ${formatTime(e.created_at)}</div>
+          </div>
+          <span class="activity-badge">${e.data?.worktree || 'main'}</span>
+        </div>
+      `).join('') || '<div class="empty-state">No sessions</div>';
+
+      // Router Tab
+      document.getElementById('x-router-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${Math.floor(sessions * 1.5)}</div><div class="stat-label">Selections</div></div>
+        <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Routes</div></div>
+        <div class="stat-card"><div class="stat-value">95%</div><div class="stat-label">Success Rate</div></div>
+      `;
+      renderXSelectionDistChart();
+      renderXSelectionRoleChart();
+
+      document.getElementById('x-router-history').innerHTML = `
+        <tr><td>${formatTime(new Date())}</td><td>session-001</td><td>Router</td><td>Session Router</td><td>95</td><td>Best match</td></tr>
+        <tr><td>${formatTime(new Date(Date.now() - 3600000))}</td><td>session-002</td><td>Core</td><td>Context Manager</td><td>92</td><td>Score threshold</td></tr>
+        <tr><td>${formatTime(new Date(Date.now() - 7200000))}</td><td>session-003</td><td>Utility</td><td>Worktree Manager</td><td>88</td><td>Role match</td></tr>
+      `;
+
+      // Analytics Tab
+      document.getElementById('x-analytics-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">${events?.length || 0}</div><div class="stat-label">Events</div></div>
+        <div class="stat-card"><div class="stat-value">${sessions + pipelines + works}</div><div class="stat-label">Actions</div></div>
+        <div class="stat-card"><div class="stat-value">4.2h</div><div class="stat-label">Avg Duration</div></div>
+      `;
+      renderXActivityHoursChart();
+      renderXWeeklyTrendChart();
+
+      document.getElementById('x-analytics-insights').innerHTML = `
+        <div class="insight-item" style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:8px;margin-bottom:8px">
+          <span style="font-size:20px">📈</span>
+          <span style="flex:1">Session activity peaks between 10 AM - 12 PM</span>
+        </div>
+        <div class="insight-item" style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:8px;margin-bottom:8px">
+          <span style="font-size:20px">🔄</span>
+          <span style="flex:1">Context switches average 3.5 per session</span>
+        </div>
+        <div class="insight-item" style="display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--bg-secondary);border-radius:8px;margin-bottom:8px">
+          <span style="font-size:20px">🎯</span>
+          <span style="flex:1">Session Router has the highest selection rate (45%)</span>
+        </div>
+      `;
+
+      // Lineage Tab
+      document.getElementById('x-lineage-stats').innerHTML = `
+        <div class="stat-card"><div class="stat-value">5</div><div class="stat-label">Nodes</div></div>
+        <div class="stat-card"><div class="stat-value">4</div><div class="stat-label">Connections</div></div>
+        <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">Depth</div></div>
+      `;
+
+      document.getElementById('x-lineage-role-filter').innerHTML = `
+        <option value="all">All Roles</option>
+        <option value="core">Core</option>
+        <option value="router">Router</option>
+        <option value="utility">Utility</option>
+      `;
+    }
+
+    function renderXScoresRoleChart() {
+      const ctx = document.getElementById('x-scores-role-chart');
+      if (!ctx) return;
+      if (charts.xScoresRole) charts.xScoresRole.destroy();
+
+      charts.xScoresRole = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: ['Core', 'Router', 'Utility', 'Analytics'],
+          datasets: [{
+            label: 'Module Scores',
+            data: [92, 95, 88, 45],
+            borderColor: COLORS.cyan,
+            backgroundColor: 'rgba(57,197,207,0.2)',
+            pointBackgroundColor: COLORS.cyan
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { r: { grid: { color: '#30363d' }, angleLines: { color: '#30363d' }, pointLabels: { color: '#8b949e' }, ticks: { color: '#8b949e', backdropColor: 'transparent' } } }
+        }
+      });
+    }
+
+    function renderXFoundationChart() {
+      const ctx = document.getElementById('x-foundation-chart');
+      if (!ctx) return;
+      if (charts.xFoundation) charts.xFoundation.destroy();
+
+      charts.xFoundation = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Core', 'Router', 'Utility'],
+          datasets: [{ data: [1, 1, 2], backgroundColor: [COLORS.cyan, COLORS.purple, COLORS.green], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#8b949e', boxWidth: 12 } } }
+        }
+      });
+    }
+
+    function renderXRoleDiversityChart() {
+      const ctx = document.getElementById('x-role-diversity-chart');
+      if (!ctx) return;
+      if (charts.xRoleDiversity) charts.xRoleDiversity.destroy();
+
+      charts.xRoleDiversity = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+          labels: ['Core', 'Router', 'Utility'],
+          datasets: [{ data: [25, 35, 40], backgroundColor: [COLORS.cyan + '80', COLORS.purple + '80', COLORS.green + '80'] }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#8b949e', boxWidth: 12 } } },
+          scales: { r: { grid: { color: '#30363d' }, ticks: { color: '#8b949e', backdropColor: 'transparent' } } }
+        }
+      });
+    }
+
+    function renderXScoreTrendsChart() {
+      const ctx = document.getElementById('x-score-trends-chart');
+      if (!ctx) return;
+      if (charts.xScoreTrends) charts.xScoreTrends.destroy();
+
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        days.push(d.toLocaleDateString('ko-KR', { weekday: 'short' }));
+      }
+
+      charts.xScoreTrends = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: days,
+          datasets: [
+            { label: 'Session Router', data: [90, 91, 93, 94, 95, 95, 95], borderColor: COLORS.cyan, tension: 0.4 },
+            { label: 'Context Manager', data: [88, 89, 90, 91, 92, 92, 92], borderColor: COLORS.purple, tension: 0.4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#8b949e' } } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, min: 80, max: 100 }
+          }
+        }
+      });
+    }
+
+    function renderXSelectionDistChart() {
+      const ctx = document.getElementById('x-selection-dist-chart');
+      if (!ctx) return;
+      if (charts.xSelectionDist) charts.xSelectionDist.destroy();
+
+      charts.xSelectionDist = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Session Router', 'Context Manager', 'Worktree Manager', 'Analytics'],
+          datasets: [{ label: 'Selections', data: [45, 30, 20, 5], backgroundColor: [COLORS.cyan, COLORS.purple, COLORS.green, COLORS.orange], borderRadius: 4 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderXSelectionRoleChart() {
+      const ctx = document.getElementById('x-selection-role-chart');
+      if (!ctx) return;
+      if (charts.xSelectionRole) charts.xSelectionRole.destroy();
+
+      charts.xSelectionRole = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: ['Core', 'Router', 'Utility'],
+          datasets: [{ data: [30, 45, 25], backgroundColor: [COLORS.cyan, COLORS.purple, COLORS.green], borderWidth: 0 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'right', labels: { color: '#8b949e', boxWidth: 12 } } }
+        }
+      });
+    }
+
+    function renderXActivityHoursChart() {
+      const ctx = document.getElementById('x-activity-hours-chart');
+      if (!ctx) return;
+      if (charts.xActivityHours) charts.xActivityHours.destroy();
+
+      const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`);
+      const data = hours.map((_, i) => i >= 9 && i <= 18 ? Math.floor(Math.random() * 10) + 5 : Math.floor(Math.random() * 3));
+
+      charts.xActivityHours = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: hours,
+          datasets: [{ label: 'Events', data, backgroundColor: COLORS.cyan, borderRadius: 2 }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e', maxTicksLimit: 12 } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderXWeeklyTrendChart() {
+      const ctx = document.getElementById('x-weekly-trend-chart');
+      if (!ctx) return;
+      if (charts.xWeeklyTrend) charts.xWeeklyTrend.destroy();
+
+      const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+
+      charts.xWeeklyTrend = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: weeks,
+          datasets: [
+            { label: 'Sessions', data: [12, 18, 22, 25], borderColor: COLORS.cyan, backgroundColor: 'rgba(57,197,207,0.1)', fill: true, tension: 0.4 },
+            { label: 'Pipelines', data: [8, 12, 15, 18], borderColor: COLORS.green, backgroundColor: 'rgba(63,185,80,0.1)', fill: true, tension: 0.4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#8b949e' } } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function runEvolutionSim() {
+      const module = document.getElementById('x-sim-module').value;
+      const scenario = document.getElementById('x-sim-scenario').value;
+
+      const currentScore = module === 'analytics' ? 45 : module === 'worktree-manager' ? 88 : module === 'context-manager' ? 92 : 95;
+      let delta = scenario === 'success' ? 3 : scenario === 'failure' ? -5 : 0;
+      const newScore = Math.min(100, Math.max(0, currentScore + delta));
+
+      document.getElementById('x-sim-result').innerHTML = `
+        <div style="padding:16px;background:var(--bg-secondary);border-radius:8px">
+          <h4 style="margin-bottom:12px">📊 Simulation Result</h4>
+          <div style="display:flex;gap:24px;align-items:center">
+            <div><span style="color:var(--text-muted)">Current:</span> <strong>${currentScore}</strong></div>
+            <div style="font-size:20px">${delta >= 0 ? '→' : '←'}</div>
+            <div><span style="color:var(--text-muted)">Projected:</span> <strong style="color:${newScore > currentScore ? COLORS.green : newScore < currentScore ? COLORS.red : 'inherit'}">${newScore}</strong></div>
+            <div style="margin-left:auto">
+              <span class="tag" style="background:${delta > 0 ? COLORS.green + '20' : delta < 0 ? COLORS.red + '20' : 'var(--bg-tertiary)'};color:${delta > 0 ? COLORS.green : delta < 0 ? COLORS.red : 'inherit'}">
+                ${delta > 0 ? '+' : ''}${delta} ${scenario}
+              </span>
+            </div>
+          </div>
+          <p style="margin-top:12px;color:var(--text-muted);font-size:12px">
+            After 10 iterations of ${scenario} scenarios, "${module}" is projected to ${delta > 0 ? 'improve' : delta < 0 ? 'decline' : 'remain stable'}.
+          </p>
+        </div>
+      `;
+      showToast('Simulation complete');
+    }
+
+    function showCreateModuleModal() {
+      showToast('Module creation: Coming soon');
+    }
+
+    function refreshMonolX() {
+      showToast('Refreshing...');
+      loadMonolX().then(() => showToast('Monol X refreshed!'));
+    }
+
+    function renderXSessionsChart(events) {
+      const ctx = document.getElementById('x-sessions-chart');
+      if (!ctx) return;
+      if (charts.xSessions) charts.xSessions.destroy();
+
+      const days = [];
+      const started = [];
+      const ended = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        days.push(d.toLocaleDateString('ko-KR', { weekday: 'short' }));
+        const dayStr = d.toDateString();
+        started.push(events?.filter(e => e.event_type === 'session_started' && new Date(e.created_at).toDateString() === dayStr).length || 0);
+        ended.push(events?.filter(e => e.event_type === 'session_ended' && new Date(e.created_at).toDateString() === dayStr).length || 0);
+      }
+
+      charts.xSessions = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: days,
+          datasets: [
+            { label: 'Started', data: started, backgroundColor: COLORS.cyan, borderRadius: 4 },
+            { label: 'Ended', data: ended, backgroundColor: COLORS.green, borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#8b949e' } } },
+          scales: {
+            x: { grid: { display: false }, ticks: { color: '#8b949e' } },
+            y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function setXTab(tab) {
+      document.querySelectorAll('.x-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      document.querySelectorAll('.x-tab-content').forEach(t => t.classList.remove('active'));
+      document.getElementById(`x-${tab}-tab`).classList.add('active');
+    }
+
+    // Users
+    async function loadUsers() {
+      const users = await fetchAPI('/stats/users');
+
+      if (users?.length) {
+        document.getElementById('users-tbody').innerHTML = users.map((u, i) => `
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div class="activity-avatar" style="background:${Object.values(COLORS)[i % 7]};width:32px;height:32px;font-size:12px">${u.name[0].toUpperCase()}</div>
+                <strong>${u.name}</strong>
+              </div>
+            </td>
+            <td>${u.session_count}</td>
+            <td>${u.message_count.toLocaleString()}</td>
+            <td>${u.rule_count || 0}</td>
+            <td>${formatTime(u.last_active_at)}</td>
+          </tr>
+        `).join('');
+      } else {
+        document.getElementById('users-tbody').innerHTML = '<tr><td colspan="5" class="empty-state">No users yet</td></tr>';
+      }
+    }
+
+    // Helpers
+    function renderActivityList(elementId, events, badgeType = null) {
+      const container = document.getElementById(elementId);
+      if (!events?.length) {
+        container.innerHTML = '<div class="empty-state"><div class="icon">📭</div>No activity yet</div>';
+        return;
+      }
+
+      container.innerHTML = events.map((e, i) => {
+        const color = Object.values(COLORS)[i % 7];
+        const initial = (e.user_name || e.user_id || '?')[0].toUpperCase();
+        const plugin = e.plugin_id?.replace('monol-', '') || 'unknown';
+        const badge = badgeType || plugin;
+
+        let title = e.event_type.replace(/_/g, ' ');
+        if (e.data) {
+          if (e.data.topic) title = e.data.topic;
+          else if (e.data.ruleName) title = e.data.ruleName;
+          else if (e.data.pluginName) title = `Installed ${e.data.pluginName}`;
+          else if (e.data.channel) title = `#${e.data.channel}`;
+          else if (e.data.worktree) title = e.data.worktree;
+          else if (e.data.skillName) title = `Used /${e.data.skillName}`;
+        }
+
+        return `
+          <div class="activity-item">
+            <div class="activity-avatar" style="background:${color}">${initial}</div>
+            <div class="activity-content">
+              <div class="activity-title">${title}</div>
+              <div class="activity-meta">${e.user_name || e.user_id} · ${formatTime(e.created_at)}</div>
+            </div>
+            <span class="activity-badge ${badge}">${e.event_type.replace(/_/g, ' ')}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function formatDuration(ms) {
+      if (!ms) return '-';
+      const hours = Math.floor(ms / (1000 * 60 * 60));
+      const mins = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+      return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    }
+
+    function formatTime(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light-theme');
+    }
+
+    async function refreshData() {
+      showToast('Refreshing...');
+      await loadViewData();
+      showToast('Updated!');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // Init
+    loadOverview();
+  </script>
+</body>
+</html>

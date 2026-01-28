@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playground Console - Workbase, Workflow, Worklog</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #171717;
+      --bg-tertiary: #1f1f1f;
+      --bg-hover: #2a2a2a;
+      --border: #262626;
+      --text: #fafafa;
+      --text-muted: #a3a3a3;
+      --text-dim: #737373;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --cyan: #06b6d4;
+      --green: #22c55e;
+      --orange: #f97316;
+      --yellow: #eab308;
+      --purple: #a855f7;
+      --red: #ef4444;
+      --pink: #ec4899;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation */
+    .top-nav {
+      height: 48px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 24px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--primary), var(--cyan));
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+    .nav-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+    }
+    .nav-tab:hover { background: var(--bg-tertiary); color: var(--text); }
+    .nav-tab.active { background: var(--primary); color: white; }
+    .nav-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-box {
+      padding: 6px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      width: 200px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .search-box:focus { border-color: var(--primary); }
+    .search-box::placeholder { color: var(--text-dim); }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* Main Layout */
+    .main-layout {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Page Views */
+    .page-view {
+      display: none;
+      flex: 1;
+      overflow: hidden;
+    }
+    .page-view.active {
+      display: flex;
+    }
+
+    /* Sidebar - Workbase Entity List */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sidebar-header h2 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { background: var(--primary); border-color: var(--primary); }
+    .entity-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .entity-section {
+      margin-bottom: 16px;
+    }
+    .entity-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .entity-section-title:hover { color: var(--text-muted); }
+    .entity-count {
+      background: var(--bg-tertiary);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+    }
+    .entity-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 4px;
+      transition: all 0.15s;
+    }
+    .entity-item:hover { background: var(--bg-tertiary); }
+    .entity-item.active { background: var(--primary); }
+    .entity-item.active .entity-meta { color: rgba(255,255,255,0.7); }
+    .entity-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      font-weight: 600;
+    }
+    .entity-info { flex: 1; min-width: 0; }
+    .entity-name {
+      font-size: 13px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .entity-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      gap: 8px;
+    }
+    .entity-badge {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .content-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .content-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .content-title h1 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .status-badge {
+      padding: 4px 12px;
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    .content-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: var(--bg-hover); border-color: var(--text-dim); }
+    .btn-primary { background: var(--primary); border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-danger { background: var(--red); border-color: var(--red); }
+    .btn-danger:hover { background: #dc2626; }
+
+    /* Kanban Board */
+    .kanban-container {
+      flex: 1;
+      overflow-x: auto;
+      padding: 20px;
+    }
+    .kanban-board {
+      display: flex;
+      gap: 16px;
+      height: 100%;
+      min-width: max-content;
+    }
+    .kanban-column {
+      width: 320px;
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 220px);
+    }
+    .kanban-column.drag-over {
+      background: var(--bg-tertiary);
+      border: 2px dashed var(--primary);
+    }
+    .column-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .column-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .column-count {
+      background: var(--bg-tertiary);
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .column-cards {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 100px;
+    }
+    .task-card {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      cursor: grab;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .task-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .task-card.dragging {
+      opacity: 0.5;
+      transform: rotate(3deg);
+      cursor: grabbing;
+    }
+    .task-card.drag-placeholder {
+      background: var(--bg-hover);
+      border: 2px dashed var(--primary);
+      opacity: 0.5;
+    }
+    .task-labels {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .task-label {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    .label-feature { background: rgba(59, 130, 246, 0.2); color: var(--primary); }
+    .label-bug { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+    .label-docs { background: rgba(168, 85, 247, 0.2); color: var(--purple); }
+    .label-refactor { background: rgba(234, 179, 8, 0.2); color: var(--yellow); }
+    .label-urgent { background: rgba(239, 68, 68, 0.3); color: var(--red); }
+    .task-title {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+    .task-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .task-id {
+      font-family: monospace;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+    .task-assignee {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .task-progress {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .progress-bar {
+      width: 60px;
+      height: 4px;
+      background: var(--bg-secondary);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+    .add-task-btn {
+      padding: 10px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .add-task-btn:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    /* Right Panel - Worklog */
+    .right-panel {
+      width: 340px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .panel-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-header h3 {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-tab {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+    }
+    .panel-tab:hover { color: var(--text); }
+    .panel-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .panel-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    .panel-view {
+      display: none;
+    }
+    .panel-view.active {
+      display: block;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .stat-trend {
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .trend-up { color: var(--green); }
+    .trend-down { color: var(--red); }
+
+    /* Worklog Activity */
+    .worklog-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .worklog-item:last-child { border-bottom: none; }
+    .worklog-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .worklog-content { flex: 1; min-width: 0; }
+    .worklog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .worklog-title {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .worklog-time {
+      font-size: 11px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+    .worklog-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .worklog-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .worklog-tag {
+      padding: 2px 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Mini Chart */
+    .mini-chart {
+      height: 80px;
+      margin-bottom: 16px;
+    }
+
+    /* Agent Terminal */
+    .agent-terminal {
+      background: var(--bg-tertiary);
+      border-radius: 10px;
+      margin-top: 16px;
+      overflow: hidden;
+    }
+    .terminal-header {
+      padding: 10px 14px;
+      background: var(--bg-secondary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .terminal-header:hover { background: var(--bg-tertiary); }
+    .terminal-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .terminal-status .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    .terminal-status .dot.idle { background: var(--yellow); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .terminal-body {
+      padding: 12px;
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      max-height: 150px;
+      overflow-y: auto;
+    }
+    .terminal-body.collapsed {
+      max-height: 0;
+      padding: 0 12px;
+      overflow: hidden;
+    }
+    .terminal-line {
+      margin-bottom: 4px;
+    }
+    .terminal-prompt { color: var(--green); }
+    .terminal-output { color: var(--text-dim); }
+    .terminal-success { color: var(--green); }
+    .terminal-error { color: var(--red); }
+
+    /* Timeline View */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      padding-bottom: 20px;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--bg-secondary);
+    }
+    .timeline-content {
+      background: var(--bg-tertiary);
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .timeline-time {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .timeline-text {
+      font-size: 12px;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      width: 500px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body {
+      padding: 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-footer {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--primary); }
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+    }
+    .form-select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a3a3a3' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .label-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .label-option {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .label-option:hover { opacity: 0.8; }
+    .label-option.selected { border-color: var(--text); }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 60px;
+      right: 20px;
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .toast {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastIn 0.3s ease;
+      min-width: 250px;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .toast.removing {
+      animation: toastOut 0.3s ease forwards;
+    }
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(20px); }
+    }
+    .toast-icon {
+      font-size: 16px;
+    }
+    .toast-message {
+      font-size: 13px;
+    }
+
+    /* Dashboard Page */
+    .dashboard-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .dashboard-card {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+    .dashboard-card-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .dashboard-card-value {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .dashboard-card-trend {
+      font-size: 12px;
+      margin-top: 8px;
+    }
+    .chart-container {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .chart-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .chart-wrapper {
+      height: 300px;
+    }
+
+    /* Logs Page */
+    .logs-content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+    }
+    .logs-filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .logs-list {
+      background: var(--bg-secondary);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .log-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .log-item:hover { background: var(--bg-tertiary); }
+    .log-item:last-child { border-bottom: none; }
+    .log-type {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      min-width: 70px;
+      text-align: center;
+    }
+    .log-type.task { background: rgba(59, 130, 246, 0.2); color: var(--primary); }
+    .log-type.git { background: rgba(168, 85, 247, 0.2); color: var(--purple); }
+    .log-type.system { background: rgba(107, 114, 128, 0.2); color: var(--text-muted); }
+    .log-message { flex: 1; font-size: 13px; }
+    .log-time { font-size: 12px; color: var(--text-muted); }
+
+    /* Footer Status */
+    .footer-status {
+      height: 28px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .status-left, .status-right {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+    .status-dot.online { background: var(--green); }
+
+    /* Context Menu */
+    .context-menu {
+      position: fixed;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px 0;
+      min-width: 160px;
+      z-index: 1002;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+    .context-menu.active { display: block; }
+    .context-menu-item {
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .context-menu-item:hover { background: var(--bg-tertiary); }
+    .context-menu-item.danger { color: var(--red); }
+    .context-menu-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    /* Mockup Badge */
+    .mockup-badge {
+      position: fixed;
+      bottom: 40px;
+      right: 360px;
+      background: var(--orange);
+      color: #000;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      z-index: 999;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-primary);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div class="logo" onclick="app.showPage('workflow')">
+      <div class="logo-icon">⛺</div>
+      <span>Playground Console</span>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <div class="nav-tab" data-page="dashboard">Dashboard</div>
+      <div class="nav-tab active" data-page="workflow">Workflow</div>
+      <div class="nav-tab" data-page="logs">Logs</div>
+      <div class="nav-tab" data-page="insights">Insights</div>
+      <div class="nav-tab" data-page="settings">Settings</div>
+    </div>
+    <div class="nav-actions">
+      <input type="text" class="search-box" id="searchBox" placeholder="Search tasks... (Cmd+K)">
+      <div class="avatar" onclick="app.showToast('Profile settings coming soon')">K</div>
+    </div>
+  </nav>
+
+  <div class="main-layout">
+    <!-- Left Sidebar - Workbase Entities -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2>Workbase</h2>
+        <button class="icon-btn" onclick="app.openProjectModal()">+</button>
+      </div>
+      <div class="entity-list" id="entityList">
+        <!-- Rendered by JS -->
+      </div>
+    </aside>
+
+    <!-- Dashboard Page -->
+    <div class="page-view" id="page-dashboard">
+      <div class="dashboard-content">
+        <h2 style="margin-bottom: 24px;">Dashboard Overview</h2>
+        <div class="dashboard-grid">
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">Total Tasks</div>
+            <div class="dashboard-card-value" id="stat-total">0</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">In Progress</div>
+            <div class="dashboard-card-value" id="stat-progress">0</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">Completed</div>
+            <div class="dashboard-card-value" id="stat-done">0</div>
+          </div>
+          <div class="dashboard-card">
+            <div class="dashboard-card-title">Completion Rate</div>
+            <div class="dashboard-card-value" id="stat-rate">0%</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">Weekly Activity</div>
+          <div class="chart-wrapper">
+            <canvas id="dashboardChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workflow Page (Kanban) -->
+    <div class="page-view active" id="page-workflow">
+      <main class="main-content">
+        <header class="content-header">
+          <div class="content-title">
+            <h1 id="currentProjectName">Monol Console</h1>
+            <span class="status-badge">Active Sprint</span>
+          </div>
+          <div class="content-actions">
+            <button class="btn" onclick="app.showToast('Filter feature coming soon')">Filter</button>
+            <button class="btn" onclick="app.showToast('Sort feature coming soon')">Sort</button>
+            <button class="btn btn-primary" onclick="app.openTaskModal()">+ New Task</button>
+          </div>
+        </header>
+
+        <div class="kanban-container">
+          <div class="kanban-board" id="kanbanBoard">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Panel - Worklog -->
+      <aside class="right-panel">
+        <div class="panel-header">
+          <h3>Worklog</h3>
+          <button class="icon-btn" style="width: 24px; height: 24px;" onclick="app.addManualLog()">+</button>
+        </div>
+        <div class="panel-tabs" id="panelTabs">
+          <div class="panel-tab active" data-view="activity">Activity</div>
+          <div class="panel-tab" data-view="timeline">Timeline</div>
+          <div class="panel-tab" data-view="stats">Stats</div>
+        </div>
+        <div class="panel-content">
+          <!-- Activity View -->
+          <div class="panel-view active" id="view-activity">
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-label">Today's Tasks</div>
+                <div class="stat-value" id="todayTasks">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Completed</div>
+                <div class="stat-value" id="todayCompleted">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">In Progress</div>
+                <div class="stat-value" id="todayProgress">0</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Time Logged</div>
+                <div class="stat-value" id="timeLogged">0h</div>
+              </div>
+            </div>
+
+            <div class="mini-chart">
+              <canvas id="activityChart"></canvas>
+            </div>
+
+            <div id="worklogList">
+              <!-- Rendered by JS -->
+            </div>
+
+            <!-- Activity Terminal -->
+            <div class="agent-terminal">
+              <div class="terminal-header" onclick="app.toggleTerminal()">
+                <div class="terminal-status">
+                  <span class="dot" id="agentDot"></span>
+                  <span>실시간 활동</span>
+                </div>
+                <span id="agentStatus">대기중</span>
+              </div>
+              <div class="terminal-body" id="terminalBody">
+                <div class="terminal-line"><span class="terminal-output">시스템 준비 완료. 태스크 대기 중...</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline View -->
+          <div class="panel-view" id="view-timeline">
+            <div class="timeline" id="timelineList">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Stats View -->
+          <div class="panel-view" id="view-stats">
+            <div class="stats-grid" style="grid-template-columns: 1fr;">
+              <div class="stat-card">
+                <div class="stat-label">Tasks This Week</div>
+                <div class="stat-value" id="weekTasks">0</div>
+                <div class="stat-trend trend-up" id="weekTrend">+0 from last week</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Average Completion Time</div>
+                <div class="stat-value">2.5h</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Most Active Day</div>
+                <div class="stat-value">Wednesday</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Logs Page -->
+    <div class="page-view" id="page-logs">
+      <div class="logs-content">
+        <h2 style="margin-bottom: 24px;">Activity Logs</h2>
+        <div class="logs-filters">
+          <select class="form-input form-select" style="width: 150px;" onchange="app.filterLogs(this.value)">
+            <option value="all">All Types</option>
+            <option value="task">Tasks</option>
+            <option value="git">Git</option>
+            <option value="system">System</option>
+          </select>
+          <input type="text" class="form-input" style="width: 300px;" placeholder="Search logs..." onkeyup="app.searchLogs(this.value)">
+        </div>
+        <div class="logs-list" id="logsListFull">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Insights Page -->
+    <div class="page-view" id="page-insights">
+      <div class="dashboard-content">
+        <h2 style="margin-bottom: 24px;">Insights & Analytics</h2>
+        <div class="chart-container">
+          <div class="chart-title">Task Distribution by Status</div>
+          <div class="chart-wrapper">
+            <canvas id="insightsChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="page-view" id="page-settings">
+      <div class="dashboard-content">
+        <h2 style="margin-bottom: 24px;">Settings</h2>
+
+        <div class="dashboard-card" style="max-width: 600px; margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px;">Preferences</h3>
+          <div class="form-group">
+            <label class="form-label">Theme</label>
+            <select class="form-input form-select">
+              <option>Dark (Default)</option>
+              <option>Light</option>
+              <option>System</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default View</label>
+            <select class="form-input form-select">
+              <option>Workflow</option>
+              <option>Dashboard</option>
+              <option>Logs</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="app.showToast('Settings saved!')">Save Changes</button>
+        </div>
+
+        <div class="dashboard-card" style="max-width: 600px; margin-bottom: 24px;">
+          <h3 style="margin-bottom: 16px;">Data Management</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 16px;">
+            Your data is automatically saved to your browser's local storage. Use the buttons below to export, import, or reset your data.
+          </p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button class="btn" onclick="app.exportData()">
+              <span>Export Data</span>
+            </button>
+            <label class="btn" style="cursor: pointer;">
+              <span>Import Data</span>
+              <input type="file" accept=".json" style="display: none;" onchange="app.importData(this.files[0]); this.value='';">
+            </label>
+            <button class="btn btn-danger" onclick="app.resetData()">
+              <span>Reset to Defaults</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="dashboard-card" style="max-width: 600px;">
+          <h3 style="margin-bottom: 16px;">Storage Info</h3>
+          <div style="font-size: 13px; color: var(--text-muted);">
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+              <span>Projects</span>
+              <span id="storage-projects">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+              <span>Tasks</span>
+              <span id="storage-tasks">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border);">
+              <span>Worklogs</span>
+              <span id="storage-worklogs">0</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+              <span>Storage Used</span>
+              <span id="storage-size">0 KB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Status Bar -->
+  <footer class="footer-status">
+    <div class="status-left">
+      <div class="status-item">
+        <span class="status-dot online"></span>
+        <span>Connected</span>
+      </div>
+      <div class="status-item">
+        <span>Branch: master</span>
+      </div>
+      <div class="status-item" id="syncStatus">
+        <span>Synced just now</span>
+      </div>
+    </div>
+    <div class="status-right">
+      <div class="status-item">
+        <span>캠핏 Sprint 2026-W04</span>
+      </div>
+      <div class="status-item">
+        <span>Playground Console v0.1.0</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay" id="taskModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="taskModalTitle">New Task</h3>
+        <button class="modal-close" onclick="app.closeTaskModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="taskEditId">
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input type="text" class="form-input" id="taskTitle" placeholder="Enter task title">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-input form-textarea" id="taskDesc" placeholder="Enter description (optional)"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Labels</label>
+          <div class="label-picker" id="labelPicker">
+            <div class="label-option label-feature" data-label="feature">Feature</div>
+            <div class="label-option label-bug" data-label="bug">Bug</div>
+            <div class="label-option label-docs" data-label="docs">Docs</div>
+            <div class="label-option label-refactor" data-label="refactor">Refactor</div>
+            <div class="label-option label-urgent" data-label="urgent">Urgent</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-input form-select" id="taskStatus">
+            <option value="backlog">Backlog</option>
+            <option value="todo">To Do</option>
+            <option value="progress">In Progress</option>
+            <option value="review">Review</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Assignee</label>
+          <select class="form-input form-select" id="taskAssignee">
+            <option value="">미배정</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="app.closeTaskModal()">Cancel</button>
+        <button class="btn btn-danger" id="deleteTaskBtn" style="display:none;" onclick="app.deleteTask()">Delete</button>
+        <button class="btn btn-primary" onclick="app.saveTask()">Save Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Modal -->
+  <div class="modal-overlay" id="projectModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>New Project</h3>
+        <button class="modal-close" onclick="app.closeProjectModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Project Name</label>
+          <input type="text" class="form-input" id="projectName" placeholder="Enter project name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon (Emoji)</label>
+          <input type="text" class="form-input" id="projectIcon" placeholder="e.g. M, R, S" maxlength="2">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <select class="form-input form-select" id="projectColor">
+            <option value="primary-cyan">Blue/Cyan</option>
+            <option value="purple-pink">Purple/Pink</option>
+            <option value="orange-yellow">Orange/Yellow</option>
+            <option value="green-cyan">Green/Cyan</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="app.closeProjectModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="app.saveProject()">Create Project</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu -->
+  <div class="context-menu" id="contextMenu">
+    <div class="context-menu-item" onclick="app.editTaskFromContext()">태스크 수정</div>
+    <div class="context-menu-item" onclick="app.duplicateTask()">복제</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item" onclick="app.quickAssign()">빠른 할당...</div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item danger" onclick="app.deleteTaskFromContext()">삭제</div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="mockup-badge">PROTOTYPE</div>
+
+  <script>
+    // Team Members
+    const TEAM_MEMBERS = [
+      { id: 'bora', name: 'Bora', email: 'brjang@nextedition.co.kr', role: '사용자', color: 'purple-pink' },
+      { id: 'dev', name: '캠핏데브', email: 'dev@nextedition.co.kr', role: '주 소유자', color: 'primary-cyan' },
+      { id: 'dhkim', name: 'dohan kim', email: 'dhkim@nextedition.co.kr', role: '사용자', color: 'orange-yellow' },
+      { id: 'dongsu', name: 'dongsulee', email: 'dongsulee@nextedition.co.kr', role: '사용자', color: 'green-cyan' },
+      { id: 'hjlee', name: 'hjlee', email: 'hjlee@nextedition.co.kr', role: '사용자', color: 'purple-pink' },
+      { id: 'hwkim', name: '김하원', email: 'hwkim@nextedition.co.kr', role: '사용자', color: 'primary-cyan' },
+      { id: 'jong', name: 'jong', email: 'jygo@nextedition.co.kr', role: '사용자', color: 'orange-yellow' },
+      { id: 'swkim', name: '김상웅', email: 'swkim@nextedition.co.kr', role: '사용자', color: 'green-cyan' },
+      { id: 'thkim', name: '태훈', email: 'thkim@nextedition.co.kr', role: '소유자', color: 'purple-pink' },
+      { id: 'umgi', name: 'umgi', email: 'umgi@nextedition.co.kr', role: '사용자', color: 'primary-cyan' },
+      { id: 'wcj', name: '정우철', email: 'wcj@nextedition.co.kr', role: '사용자', color: 'orange-yellow' },
+      { id: 'yangwoo', name: 'YangWoo', email: 'yangwoolee@nextedition.co.kr', role: '사용자', color: 'green-cyan' },
+      { id: 'chan', name: 'chan', email: 'ycha@nextedition.co.kr', role: '사용자', color: 'purple-pink' },
+      { id: 'ira', name: 'ira', email: 'yirlee@nextedition.co.kr', role: '사용자', color: 'primary-cyan' },
+      { id: 'yjchoi', name: '윤정', email: 'yjchoi@nextedition.co.kr', role: '사용자', color: 'orange-yellow' }
+    ];
+
+    // Default Data (used when no saved data exists)
+    const DEFAULT_DATA = {
+      projects: [
+        { id: 'p1', name: '캠핏 앱 v3.0', icon: '⛺', color: 'primary-cyan', active: true },
+        { id: 'p2', name: '백엔드 API', icon: '🔧', color: 'purple-pink', active: false },
+        { id: 'p3', name: '관리자 대시보드', icon: '📊', color: 'orange-yellow', active: false },
+        { id: 'p4', name: '마케팅 캠페인', icon: '📢', color: 'green-cyan', active: false }
+      ],
+      tasks: [
+        // 캠핏 앱 v3.0
+        { id: 'CF-01', title: '캠핑장 지도 검색 UI 개선', status: 'done', labels: ['feature'], assignee: 'hwkim', project: 'p1' },
+        { id: 'CF-02', title: '실시간 예약 현황 API 연동', status: 'done', labels: ['feature'], assignee: 'dhkim', project: 'p1' },
+        { id: 'CF-03', title: '결제 모듈 PG사 연동 (토스페이먼츠)', status: 'done', labels: ['feature'], assignee: 'swkim', project: 'p1' },
+        { id: 'CF-04', title: '캠핑장 리뷰 시스템 구현', status: 'progress', labels: ['feature'], assignee: 'bora', progress: 75, project: 'p1' },
+        { id: 'CF-05', title: '푸시 알림 서비스 구축', status: 'progress', labels: ['feature'], assignee: 'wcj', progress: 40, project: 'p1' },
+        { id: 'CF-06', title: '즐겨찾기 기능 동기화 이슈', status: 'review', labels: ['bug'], assignee: 'dongsu', project: 'p1' },
+        { id: 'CF-07', title: '캠핑 용품 마켓플레이스 MVP', status: 'todo', labels: ['feature', 'urgent'], assignee: 'thkim', project: 'p1' },
+        { id: 'CF-08', title: 'iOS 16 대응 레이아웃 버그 수정', status: 'todo', labels: ['bug'], assignee: 'hjlee', project: 'p1' },
+        { id: 'CF-09', title: '다크모드 지원', status: 'todo', labels: ['feature'], assignee: 'chan', project: 'p1' },
+        { id: 'CF-10', title: '캠핑장 추천 알고리즘 개선', status: 'backlog', labels: ['feature'], assignee: 'jong', project: 'p1' },
+        { id: 'CF-11', title: '앱 성능 최적화 (로딩 속도)', status: 'backlog', labels: ['refactor'], assignee: '', project: 'p1' },
+        { id: 'CF-12', title: '사용자 온보딩 플로우 개선', status: 'backlog', labels: ['feature'], assignee: '', project: 'p1' },
+
+        // 백엔드 API
+        { id: 'API-01', title: '예약 시스템 API v2 마이그레이션', status: 'progress', labels: ['feature'], assignee: 'dhkim', progress: 60, project: 'p2' },
+        { id: 'API-02', title: '캠핑장 데이터 크롤링 자동화', status: 'todo', labels: ['feature'], assignee: 'umgi', project: 'p2' },
+        { id: 'API-03', title: 'Redis 캐싱 레이어 구축', status: 'backlog', labels: ['refactor'], assignee: 'yangwoo', project: 'p2' },
+        { id: 'API-04', title: 'API 문서 자동화 (Swagger)', status: 'done', labels: ['docs'], assignee: 'ira', project: 'p2' },
+
+        // 관리자 대시보드
+        { id: 'ADM-01', title: '실시간 매출 대시보드', status: 'review', labels: ['feature'], assignee: 'yjchoi', project: 'p3' },
+        { id: 'ADM-02', title: '캠핑장 등록 심사 시스템', status: 'progress', labels: ['feature'], assignee: 'dev', progress: 85, project: 'p3' },
+        { id: 'ADM-03', title: '고객 문의 관리 페이지', status: 'todo', labels: ['feature'], assignee: 'hjlee', project: 'p3' },
+
+        // 마케팅 캠페인
+        { id: 'MKT-01', title: '2026 봄 시즌 프로모션 기획', status: 'progress', labels: ['feature'], assignee: 'bora', progress: 30, project: 'p4' },
+        { id: 'MKT-02', title: '인플루언서 협업 캠페인', status: 'todo', labels: ['feature'], assignee: 'yjchoi', project: 'p4' }
+      ],
+      worklogs: [
+        { type: 'complete', title: '태스크 완료', desc: '결제 모듈 PG사 연동 완료 by 김상웅', taskId: 'CF-03', labels: ['feature'], time: Date.now() - 3600000 },
+        { type: 'progress', title: '진행률 업데이트', desc: '캠핑장 리뷰 시스템 70% → 75%', taskId: 'CF-04', time: Date.now() - 7200000 },
+        { type: 'move', title: '태스크 이동', desc: '즐겨찾기 동기화 이슈 → 리뷰', taskId: 'CF-06', time: Date.now() - 10800000 },
+        { type: 'create', title: '태스크 생성', desc: '캠핑 용품 마켓플레이스 MVP 추가', taskId: 'CF-07', labels: ['feature', 'urgent'], time: Date.now() - 14400000 },
+        { type: 'comment', title: '코멘트 추가', desc: '태훈님이 마켓플레이스 기획안 첨부', time: Date.now() - 18000000 }
+      ],
+      currentProject: 'p1',
+      taskIdCounter: 30
+    };
+
+    // Storage Key
+    const STORAGE_KEY = 'playground-console-data';
+
+    // Application State & Logic
+    const app = {
+      // Data (will be loaded from localStorage)
+      projects: [],
+      tasks: [],
+      worklogs: [],
+      currentProject: 'p1',
+      taskIdCounter: 20,
+
+      selectedLabels: [],
+      contextTaskId: null,
+      draggedTask: null,
+      charts: {},
+
+      // ========== Local Storage Functions ==========
+      loadFromStorage() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const data = JSON.parse(saved);
+            this.projects = data.projects || DEFAULT_DATA.projects;
+            this.tasks = data.tasks || DEFAULT_DATA.tasks;
+            this.worklogs = data.worklogs || [];
+            this.currentProject = data.currentProject || 'p1';
+            this.taskIdCounter = data.taskIdCounter || 20;
+            console.log('Data loaded from localStorage');
+            return true;
+          }
+        } catch (e) {
+          console.error('Failed to load from localStorage:', e);
+        }
+        return false;
+      },
+
+      saveToStorage() {
+        try {
+          const data = {
+            projects: this.projects,
+            tasks: this.tasks,
+            worklogs: this.worklogs.slice(0, 100), // Keep last 100 logs
+            currentProject: this.currentProject,
+            taskIdCounter: this.taskIdCounter,
+            savedAt: Date.now()
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          this.updateSyncStatus();
+          return true;
+        } catch (e) {
+          console.error('Failed to save to localStorage:', e);
+          this.showToast('Failed to save data', 'error');
+          return false;
+        }
+      },
+
+      resetData() {
+        if (confirm('Are you sure you want to reset all data? This cannot be undone.')) {
+          localStorage.removeItem(STORAGE_KEY);
+          this.projects = JSON.parse(JSON.stringify(DEFAULT_DATA.projects));
+          this.tasks = JSON.parse(JSON.stringify(DEFAULT_DATA.tasks));
+          this.worklogs = [];
+          this.currentProject = 'p1';
+          this.taskIdCounter = 20;
+          this.saveToStorage();
+          this.renderAll();
+          this.updateStats();
+          this.showToast('Data reset to defaults', 'success');
+        }
+      },
+
+      exportData() {
+        const data = {
+          projects: this.projects,
+          tasks: this.tasks,
+          worklogs: this.worklogs,
+          currentProject: this.currentProject,
+          taskIdCounter: this.taskIdCounter,
+          exportedAt: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `monol-console-backup-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        this.showToast('Data exported successfully', 'success');
+      },
+
+      importData(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data.projects && data.tasks) {
+              this.projects = data.projects;
+              this.tasks = data.tasks;
+              this.worklogs = data.worklogs || [];
+              this.currentProject = data.currentProject || 'p1';
+              this.taskIdCounter = data.taskIdCounter || 20;
+              this.saveToStorage();
+              this.renderAll();
+              this.updateStats();
+              this.showToast('Data imported successfully', 'success');
+            } else {
+              throw new Error('Invalid data format');
+            }
+          } catch (err) {
+            this.showToast('Failed to import: Invalid file format', 'error');
+          }
+        };
+        reader.readAsText(file);
+      },
+
+      updateSyncStatus() {
+        const el = document.getElementById('syncStatus');
+        if (el) {
+          el.innerHTML = `<span>Saved just now</span>`;
+        }
+      },
+
+      // Initialize
+      init() {
+        // Load saved data or use defaults
+        if (!this.loadFromStorage()) {
+          this.projects = JSON.parse(JSON.stringify(DEFAULT_DATA.projects));
+          this.tasks = JSON.parse(JSON.stringify(DEFAULT_DATA.tasks));
+          this.worklogs = [];
+          this.saveToStorage();
+        }
+
+        this.bindEvents();
+        this.renderAll();
+        this.initCharts();
+        this.startAgentSimulation();
+        this.updateStats();
+
+        // Auto-save every 30 seconds
+        setInterval(() => this.saveToStorage(), 30000);
+      },
+
+      bindEvents() {
+        // Nav tabs
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+          tab.addEventListener('click', () => this.showPage(tab.dataset.page));
+        });
+
+        // Panel tabs
+        document.querySelectorAll('.panel-tab').forEach(tab => {
+          tab.addEventListener('click', () => this.showPanelView(tab.dataset.view));
+        });
+
+        // Label picker
+        document.querySelectorAll('.label-option').forEach(label => {
+          label.addEventListener('click', () => this.toggleLabel(label));
+        });
+
+        // Close modals on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+          overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+              overlay.classList.remove('active');
+            }
+          });
+        });
+
+        // Close context menu
+        document.addEventListener('click', () => {
+          document.getElementById('contextMenu').classList.remove('active');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            document.getElementById('searchBox').focus();
+          }
+          if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            document.getElementById('contextMenu').classList.remove('active');
+          }
+        });
+
+        // Search
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+          this.searchTasks(e.target.value);
+        });
+      },
+
+      // Rendering
+      renderAll() {
+        this.renderEntities();
+        this.renderKanban();
+        this.renderWorklogs();
+        this.renderTimeline();
+        this.renderFullLogs();
+      },
+
+      renderEntities() {
+        const container = document.getElementById('entityList');
+        const currentProj = this.projects.find(p => p.id === this.currentProject);
+
+        container.innerHTML = `
+          <div class="entity-section">
+            <div class="entity-section-title">
+              <span>Projects</span>
+              <span class="entity-count">${this.projects.length}</span>
+            </div>
+            ${this.projects.map(p => {
+              const taskCount = this.tasks.filter(t => t.project === p.id).length;
+              const activeCount = this.tasks.filter(t => t.project === p.id && t.status === 'progress').length;
+              const colors = this.getGradient(p.color);
+              return `
+                <div class="entity-item ${p.id === this.currentProject ? 'active' : ''}" onclick="app.selectProject('${p.id}')">
+                  <div class="entity-icon" style="background: linear-gradient(135deg, ${colors[0]}, ${colors[1]});">${p.icon}</div>
+                  <div class="entity-info">
+                    <div class="entity-name">${p.name}</div>
+                    <div class="entity-meta">
+                      <span>${taskCount} tasks</span>
+                      <span>${activeCount} active</span>
+                    </div>
+                  </div>
+                  ${activeCount > 0 ? '<div class="entity-badge" style="background: var(--green);"></div>' : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="entity-section">
+            <div class="entity-section-title" onclick="app.toggleTeamList()">
+              <span>Team</span>
+              <span class="entity-count">${TEAM_MEMBERS.length}</span>
+            </div>
+            <div id="teamList" class="team-list">
+              ${TEAM_MEMBERS.slice(0, 5).map(m => {
+                const colors = this.getGradient(m.color);
+                const initial = m.name.charAt(0).toUpperCase();
+                const isActive = this.tasks.some(t => t.assignee === m.id && t.status === 'progress');
+                return `
+                  <div class="entity-item" onclick="app.filterByAssignee('${m.id}')">
+                    <div class="entity-icon" style="background: linear-gradient(135deg, ${colors[0]}, ${colors[1]});">${initial}</div>
+                    <div class="entity-info">
+                      <div class="entity-name">${m.name}</div>
+                      <div class="entity-meta"><span>${m.role}</span></div>
+                    </div>
+                    ${isActive ? '<div class="entity-badge" style="background: var(--green);"></div>' : ''}
+                  </div>
+                `;
+              }).join('')}
+              <div class="entity-item" style="color: var(--text-muted); font-size: 12px;" onclick="app.showAllMembers()">
+                + ${TEAM_MEMBERS.length - 5}명 더보기
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      renderKanban() {
+        const columns = [
+          { id: 'backlog', name: 'Backlog', color: 'var(--text-dim)' },
+          { id: 'todo', name: 'To Do', color: 'var(--primary)' },
+          { id: 'progress', name: 'In Progress', color: 'var(--yellow)' },
+          { id: 'review', name: 'Review', color: 'var(--purple)' },
+          { id: 'done', name: 'Done', color: 'var(--green)' }
+        ];
+
+        const projectTasks = this.tasks.filter(t => t.project === this.currentProject);
+        const board = document.getElementById('kanbanBoard');
+
+        board.innerHTML = columns.map(col => {
+          const colTasks = projectTasks.filter(t => t.status === col.id);
+          return `
+            <div class="kanban-column" data-status="${col.id}"
+                 ondragover="app.handleDragOver(event)"
+                 ondrop="app.handleDrop(event, '${col.id}')"
+                 ondragleave="app.handleDragLeave(event)">
+              <div class="column-header">
+                <div class="column-title">
+                  <span style="color: ${col.color};">${col.name}</span>
+                  <span class="column-count">${colTasks.length}</span>
+                </div>
+                <button class="icon-btn" style="width: 24px; height: 24px;" onclick="app.openTaskModal('${col.id}')">+</button>
+              </div>
+              <div class="column-cards">
+                ${colTasks.map(task => this.renderTaskCard(task)).join('')}
+                <button class="add-task-btn" onclick="app.openTaskModal('${col.id}')">+ Add task</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      renderTaskCard(task) {
+        const progressBar = task.progress ? `
+          <div class="task-progress">
+            <div class="progress-bar"><div class="progress-fill" style="width: ${task.progress}%;"></div></div>
+            <span>${task.progress}%</span>
+          </div>
+        ` : `<span class="task-id">${task.id}</span>`;
+
+        // Get assignee info from TEAM_MEMBERS
+        const member = TEAM_MEMBERS.find(m => m.id === task.assignee);
+        let assigneeHtml = '';
+        if (member) {
+          const colors = this.getGradient(member.color);
+          const initial = member.name.charAt(0).toUpperCase();
+          assigneeHtml = `<div class="task-assignee" style="background: linear-gradient(135deg, ${colors[0]}, ${colors[1]});" title="${member.name}">${initial}</div>`;
+        }
+
+        const borderStyle = task.status === 'progress' ?
+          `border-left: 3px solid ${task.progress > 60 ? 'var(--green)' : 'var(--yellow)'};` : '';
+
+        return `
+          <div class="task-card"
+               draggable="true"
+               data-task-id="${task.id}"
+               style="${borderStyle} ${task.status === 'done' ? 'opacity: 0.7;' : ''}"
+               ondragstart="app.handleDragStart(event, '${task.id}')"
+               ondragend="app.handleDragEnd(event)"
+               onclick="app.openTaskModal(null, '${task.id}')"
+               oncontextmenu="app.showContextMenu(event, '${task.id}')">
+            <div class="task-labels">
+              ${task.labels.map(l => `<span class="task-label label-${l}">${l.charAt(0).toUpperCase() + l.slice(1)}</span>`).join('')}
+            </div>
+            <div class="task-title">${task.title}</div>
+            <div class="task-meta">
+              ${progressBar}
+              ${assigneeHtml}
+            </div>
+          </div>
+        `;
+      },
+
+      renderWorklogs() {
+        const container = document.getElementById('worklogList');
+        const icons = {
+          complete: { icon: '&#10003;', bg: 'rgba(34, 197, 94, 0.2)' },
+          progress: { icon: '&#9998;', bg: 'rgba(59, 130, 246, 0.2)' },
+          comment: { icon: '&#128221;', bg: 'rgba(168, 85, 247, 0.2)' },
+          move: { icon: '&#8594;', bg: 'rgba(234, 179, 8, 0.2)' },
+          create: { icon: '+', bg: 'rgba(6, 182, 212, 0.2)' }
+        };
+
+        container.innerHTML = this.worklogs.slice(0, 5).map(log => {
+          const icon = icons[log.type] || icons.create;
+          return `
+            <div class="worklog-item">
+              <div class="worklog-icon" style="background: ${icon.bg};">${icon.icon}</div>
+              <div class="worklog-content">
+                <div class="worklog-header">
+                  <div class="worklog-title">${log.title}</div>
+                  <div class="worklog-time">${this.formatTime(log.time)}</div>
+                </div>
+                <div class="worklog-desc">${log.desc}</div>
+                ${log.taskId || log.labels ? `
+                  <div class="worklog-tags">
+                    ${log.taskId ? `<span class="worklog-tag">${log.taskId}</span>` : ''}
+                    ${log.labels ? log.labels.map(l => `<span class="worklog-tag">${l}</span>`).join('') : ''}
+                  </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      renderTimeline() {
+        const container = document.getElementById('timelineList');
+        const colors = ['var(--green)', 'var(--primary)', 'var(--purple)', 'var(--yellow)', 'var(--cyan)'];
+
+        container.innerHTML = this.worklogs.slice(0, 6).map((log, i) => `
+          <div class="timeline-item">
+            <div class="timeline-dot" style="background: ${colors[i % colors.length]};"></div>
+            <div class="timeline-content">
+              <div class="timeline-time">${this.formatTime(log.time)}</div>
+              <div class="timeline-text">${log.title}: ${log.desc}</div>
+            </div>
+          </div>
+        `).join('');
+      },
+
+      renderFullLogs() {
+        const container = document.getElementById('logsListFull');
+        const allLogs = this.worklogs.map(log => ({
+          ...log,
+          logType: log.type === 'complete' || log.type === 'progress' || log.type === 'create' || log.type === 'move' ? 'task' :
+                   log.type === 'comment' ? 'git' : 'system'
+        }));
+
+        container.innerHTML = allLogs.map(log => `
+          <div class="log-item" data-type="${log.logType}">
+            <span class="log-type ${log.logType}">${log.logType}</span>
+            <span class="log-message">${log.title} - ${log.desc}</span>
+            <span class="log-time">${this.formatTime(log.time)}</span>
+          </div>
+        `).join('');
+      },
+
+      // Page Navigation
+      showPage(page) {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`.nav-tab[data-page="${page}"]`).classList.add('active');
+
+        document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+        document.getElementById(`page-${page}`).classList.add('active');
+
+        if (page === 'dashboard') this.updateDashboard();
+        if (page === 'insights') this.updateInsights();
+        if (page === 'settings') this.updateStorageInfo();
+      },
+
+      updateStorageInfo() {
+        document.getElementById('storage-projects').textContent = this.projects.length;
+        document.getElementById('storage-tasks').textContent = this.tasks.length;
+        document.getElementById('storage-worklogs').textContent = this.worklogs.length;
+
+        const data = localStorage.getItem(STORAGE_KEY);
+        const size = data ? new Blob([data]).size : 0;
+        const sizeKB = (size / 1024).toFixed(2);
+        document.getElementById('storage-size').textContent = sizeKB + ' KB';
+      },
+
+      showPanelView(view) {
+        document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`.panel-tab[data-view="${view}"]`).classList.add('active');
+
+        document.querySelectorAll('.panel-view').forEach(p => p.classList.remove('active'));
+        document.getElementById(`view-${view}`).classList.add('active');
+      },
+
+      // Project Management
+      selectProject(projectId) {
+        this.currentProject = projectId;
+        const project = this.projects.find(p => p.id === projectId);
+        document.getElementById('currentProjectName').textContent = project.name;
+        this.renderEntities();
+        this.renderKanban();
+        this.updateStats();
+        this.saveToStorage();
+      },
+
+      openProjectModal() {
+        document.getElementById('projectName').value = '';
+        document.getElementById('projectIcon').value = '';
+        document.getElementById('projectModal').classList.add('active');
+      },
+
+      closeProjectModal() {
+        document.getElementById('projectModal').classList.remove('active');
+      },
+
+      saveProject() {
+        const name = document.getElementById('projectName').value.trim();
+        const icon = document.getElementById('projectIcon').value.trim() || name.charAt(0).toUpperCase();
+        const color = document.getElementById('projectColor').value;
+
+        if (!name) {
+          this.showToast('Please enter a project name', 'error');
+          return;
+        }
+
+        const newProject = {
+          id: 'p' + (this.projects.length + 1),
+          name,
+          icon,
+          color,
+          active: false
+        };
+
+        this.projects.push(newProject);
+        this.closeProjectModal();
+        this.renderEntities();
+        this.saveToStorage();
+        this.showToast(`Project "${name}" created!`, 'success');
+        this.addWorklog('create', 'Project created', `New project: ${name}`);
+      },
+
+      // Task Management
+      openTaskModal(status = null, taskId = null) {
+        const modal = document.getElementById('taskModal');
+        const titleEl = document.getElementById('taskModalTitle');
+        const deleteBtn = document.getElementById('deleteTaskBtn');
+        const assigneeSelect = document.getElementById('taskAssignee');
+
+        // Populate assignee options
+        assigneeSelect.innerHTML = '<option value="">미배정</option>' +
+          TEAM_MEMBERS.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+        // Reset form
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskDesc').value = '';
+        document.getElementById('taskStatus').value = status || 'backlog';
+        document.getElementById('taskAssignee').value = '';
+        document.getElementById('taskEditId').value = '';
+        this.selectedLabels = [];
+        document.querySelectorAll('.label-option').forEach(l => l.classList.remove('selected'));
+
+        if (taskId) {
+          // Edit mode
+          const task = this.tasks.find(t => t.id === taskId);
+          if (task) {
+            titleEl.textContent = 'Edit Task';
+            deleteBtn.style.display = 'block';
+            document.getElementById('taskEditId').value = taskId;
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDesc').value = task.desc || '';
+            document.getElementById('taskStatus').value = task.status;
+            document.getElementById('taskAssignee').value = task.assignee || '';
+            this.selectedLabels = [...task.labels];
+            task.labels.forEach(l => {
+              const opt = document.querySelector(`.label-option[data-label="${l}"]`);
+              if (opt) opt.classList.add('selected');
+            });
+          }
+        } else {
+          titleEl.textContent = 'New Task';
+          deleteBtn.style.display = 'none';
+        }
+
+        modal.classList.add('active');
+        document.getElementById('taskTitle').focus();
+      },
+
+      closeTaskModal() {
+        document.getElementById('taskModal').classList.remove('active');
+      },
+
+      toggleLabel(el) {
+        const label = el.dataset.label;
+        el.classList.toggle('selected');
+        if (this.selectedLabels.includes(label)) {
+          this.selectedLabels = this.selectedLabels.filter(l => l !== label);
+        } else {
+          this.selectedLabels.push(label);
+        }
+      },
+
+      saveTask() {
+        const title = document.getElementById('taskTitle').value.trim();
+        const desc = document.getElementById('taskDesc').value.trim();
+        const status = document.getElementById('taskStatus').value;
+        const assignee = document.getElementById('taskAssignee').value;
+        const editId = document.getElementById('taskEditId').value;
+
+        if (!title) {
+          this.showToast('Please enter a task title', 'error');
+          return;
+        }
+
+        if (editId) {
+          // Update existing
+          const task = this.tasks.find(t => t.id === editId);
+          if (task) {
+            const oldStatus = task.status;
+            task.title = title;
+            task.desc = desc;
+            task.status = status;
+            task.assignee = assignee;
+            task.labels = [...this.selectedLabels];
+
+            this.showToast(`Task "${title}" updated!`, 'success');
+            if (oldStatus !== status) {
+              this.addWorklog('move', 'Task moved', `${title} moved to ${this.getStatusName(status)}`, editId);
+            }
+          }
+        } else {
+          // Create new
+          const newTask = {
+            id: 'MC-' + (++this.taskIdCounter),
+            title,
+            desc,
+            status,
+            labels: [...this.selectedLabels],
+            assignee,
+            project: this.currentProject
+          };
+          this.tasks.push(newTask);
+          this.showToast(`Task "${title}" created!`, 'success');
+          this.addWorklog('create', 'Task created', `New task: ${title}`, newTask.id, this.selectedLabels);
+        }
+
+        this.closeTaskModal();
+        this.renderKanban();
+        this.updateStats();
+        this.saveToStorage();
+      },
+
+      deleteTask() {
+        const editId = document.getElementById('taskEditId').value;
+        if (editId) {
+          const task = this.tasks.find(t => t.id === editId);
+          this.tasks = this.tasks.filter(t => t.id !== editId);
+          this.closeTaskModal();
+          this.renderKanban();
+          this.updateStats();
+          this.saveToStorage();
+          this.showToast(`Task deleted`, 'success');
+          this.addWorklog('complete', 'Task deleted', `Deleted: ${task?.title || editId}`);
+        }
+      },
+
+      // Drag & Drop
+      handleDragStart(e, taskId) {
+        this.draggedTask = taskId;
+        e.target.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      },
+
+      handleDragEnd(e) {
+        e.target.classList.remove('dragging');
+        document.querySelectorAll('.kanban-column').forEach(col => {
+          col.classList.remove('drag-over');
+        });
+      },
+
+      handleDragOver(e) {
+        e.preventDefault();
+        e.currentTarget.classList.add('drag-over');
+      },
+
+      handleDragLeave(e) {
+        e.currentTarget.classList.remove('drag-over');
+      },
+
+      handleDrop(e, newStatus) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+
+        if (this.draggedTask) {
+          const task = this.tasks.find(t => t.id === this.draggedTask);
+          if (task && task.status !== newStatus) {
+            const oldStatus = task.status;
+            task.status = newStatus;
+
+            // Update progress for done tasks
+            if (newStatus === 'done') {
+              task.progress = 100;
+            }
+
+            this.renderKanban();
+            this.updateStats();
+            this.saveToStorage();
+            this.showToast(`Task moved to ${this.getStatusName(newStatus)}`);
+            this.addWorklog('move', 'Task moved', `${task.title} moved from ${this.getStatusName(oldStatus)} to ${this.getStatusName(newStatus)}`, task.id);
+          }
+        }
+        this.draggedTask = null;
+      },
+
+      // Context Menu
+      showContextMenu(e, taskId) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.contextTaskId = taskId;
+        const menu = document.getElementById('contextMenu');
+        menu.style.left = e.pageX + 'px';
+        menu.style.top = e.pageY + 'px';
+        menu.classList.add('active');
+      },
+
+      editTaskFromContext() {
+        if (this.contextTaskId) {
+          this.openTaskModal(null, this.contextTaskId);
+        }
+      },
+
+      duplicateTask() {
+        if (this.contextTaskId) {
+          const task = this.tasks.find(t => t.id === this.contextTaskId);
+          if (task) {
+            const newTask = {
+              ...task,
+              id: 'MC-' + (++this.taskIdCounter),
+              title: task.title + ' (copy)'
+            };
+            this.tasks.push(newTask);
+            this.renderKanban();
+            this.saveToStorage();
+            this.showToast('Task duplicated');
+          }
+        }
+      },
+
+      quickAssign() {
+        if (this.contextTaskId) {
+          const task = this.tasks.find(t => t.id === this.contextTaskId);
+          if (task) {
+            // Quick assign to a random available member
+            const availableMembers = TEAM_MEMBERS.filter(m => m.role !== '주 소유자');
+            const randomMember = availableMembers[Math.floor(Math.random() * availableMembers.length)];
+            task.assignee = randomMember.id;
+            this.renderKanban();
+            this.saveToStorage();
+            this.showToast(`${randomMember.name}님에게 할당됨`);
+            this.addWorklog('progress', '태스크 할당', `${task.title} → ${randomMember.name}`, task.id);
+          }
+        }
+      },
+
+      deleteTaskFromContext() {
+        if (this.contextTaskId) {
+          const task = this.tasks.find(t => t.id === this.contextTaskId);
+          this.tasks = this.tasks.filter(t => t.id !== this.contextTaskId);
+          this.renderKanban();
+          this.updateStats();
+          this.saveToStorage();
+          this.showToast('Task deleted');
+          this.addWorklog('complete', 'Task deleted', `Deleted: ${task?.title || this.contextTaskId}`);
+        }
+      },
+
+      // Team Functions
+      filterByAssignee(memberId) {
+        const member = TEAM_MEMBERS.find(m => m.id === memberId);
+        if (member) {
+          document.getElementById('searchBox').value = member.name;
+          this.searchTasks(member.name);
+          this.showToast(`${member.name}님의 태스크 필터링`);
+        }
+      },
+
+      showAllMembers() {
+        let html = '<div style="max-height: 400px; overflow-y: auto;">';
+        TEAM_MEMBERS.forEach(m => {
+          const taskCount = this.tasks.filter(t => t.assignee === m.id).length;
+          const colors = this.getGradient(m.color);
+          html += `
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid var(--border);">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, ${colors[0]}, ${colors[1]}); display: flex; align-items: center; justify-content: center; font-weight: 600;">${m.name.charAt(0)}</div>
+              <div style="flex: 1;">
+                <div style="font-weight: 500;">${m.name}</div>
+                <div style="font-size: 11px; color: var(--text-muted);">${m.email}</div>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted);">${taskCount} tasks</div>
+            </div>
+          `;
+        });
+        html += '</div>';
+
+        // Simple alert with member list (could be a proper modal)
+        this.showToast(`팀원 ${TEAM_MEMBERS.length}명 - Settings에서 관리`);
+      },
+
+      toggleTeamList() {
+        const list = document.getElementById('teamList');
+        if (list) {
+          list.style.display = list.style.display === 'none' ? 'block' : 'none';
+        }
+      },
+
+      getMemberName(memberId) {
+        const member = TEAM_MEMBERS.find(m => m.id === memberId);
+        return member ? member.name : memberId;
+      },
+
+      // Search
+      searchTasks(query) {
+        if (!query) {
+          this.renderKanban();
+          return;
+        }
+
+        const q = query.toLowerCase();
+        document.querySelectorAll('.task-card').forEach(card => {
+          const title = card.querySelector('.task-title').textContent.toLowerCase();
+          const id = card.dataset.taskId.toLowerCase();
+          if (title.includes(q) || id.includes(q)) {
+            card.style.display = '';
+            card.style.boxShadow = '0 0 0 2px var(--primary)';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      },
+
+      // Stats
+      updateStats() {
+        const projectTasks = this.tasks.filter(t => t.project === this.currentProject);
+        const done = projectTasks.filter(t => t.status === 'done').length;
+        const progress = projectTasks.filter(t => t.status === 'progress').length;
+
+        document.getElementById('todayTasks').textContent = projectTasks.length;
+        document.getElementById('todayCompleted').textContent = done;
+        document.getElementById('todayProgress').textContent = progress;
+        document.getElementById('timeLogged').textContent = (done * 1.5 + progress * 0.5).toFixed(1) + 'h';
+        document.getElementById('weekTasks').textContent = projectTasks.length;
+      },
+
+      updateDashboard() {
+        const total = this.tasks.length;
+        const done = this.tasks.filter(t => t.status === 'done').length;
+        const progress = this.tasks.filter(t => t.status === 'progress').length;
+
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-progress').textContent = progress;
+        document.getElementById('stat-done').textContent = done;
+        document.getElementById('stat-rate').textContent = total > 0 ? Math.round(done / total * 100) + '%' : '0%';
+
+        if (this.charts.dashboard) {
+          this.charts.dashboard.data.datasets[0].data = [3, 5, 4, done, progress + 2, 2, total > 10 ? 8 : 4];
+          this.charts.dashboard.update();
+        }
+      },
+
+      updateInsights() {
+        const statusCounts = ['backlog', 'todo', 'progress', 'review', 'done'].map(s =>
+          this.tasks.filter(t => t.status === s).length
+        );
+
+        if (this.charts.insights) {
+          this.charts.insights.data.datasets[0].data = statusCounts;
+          this.charts.insights.update();
+        }
+      },
+
+      // Worklog
+      addWorklog(type, title, desc, taskId = null, labels = null) {
+        const log = { type, title, desc, time: Date.now() };
+        if (taskId) log.taskId = taskId;
+        if (labels && labels.length) log.labels = labels;
+
+        this.worklogs.unshift(log);
+        this.renderWorklogs();
+        this.renderTimeline();
+        this.renderFullLogs();
+        this.saveToStorage();
+      },
+
+      addManualLog() {
+        this.addWorklog('comment', 'Manual log', 'User added a note');
+        this.showToast('Log entry added');
+      },
+
+      // Progress Simulation (simulates team working on tasks)
+      startAgentSimulation() {
+        setInterval(() => {
+          const progressTasks = this.tasks.filter(t => t.status === 'progress' && t.progress && t.progress < 100);
+          if (progressTasks.length > 0) {
+            const task = progressTasks[Math.floor(Math.random() * progressTasks.length)];
+            const oldProgress = task.progress;
+            task.progress = Math.min(100, task.progress + Math.floor(Math.random() * 5) + 1);
+
+            if (task.progress >= 100) {
+              task.status = 'review';
+              const memberName = this.getMemberName(task.assignee);
+              this.addWorklog('complete', '태스크 완료', `${task.title} 리뷰 준비 완료 by ${memberName}`, task.id);
+              this.addTerminalLine(`<span class="terminal-success">${task.id} 완료! → 리뷰</span>`);
+              this.saveToStorage();
+            }
+            this.renderKanban();
+          }
+        }, 8000);
+      },
+
+      simulateWork(task) {
+        const memberName = this.getMemberName(task.assignee);
+        this.addTerminalLine(`<span class="terminal-prompt">></span> ${memberName}님이 ${task.id} 작업 시작...`);
+
+        setTimeout(() => {
+          this.addTerminalLine(`<span class="terminal-output">요구사항 분석 중...</span>`);
+        }, 1000);
+
+        setTimeout(() => {
+          this.addTerminalLine(`<span class="terminal-output">구현 진행 중...</span>`);
+          if (!task.progress) task.progress = 10;
+          this.renderKanban();
+          this.saveToStorage();
+        }, 2000);
+      },
+
+      addTerminalLine(html) {
+        const terminal = document.getElementById('terminalBody');
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        line.innerHTML = html;
+        terminal.appendChild(line);
+        terminal.scrollTop = terminal.scrollHeight;
+      },
+
+      toggleTerminal() {
+        document.getElementById('terminalBody').classList.toggle('collapsed');
+      },
+
+      // Charts
+      initCharts() {
+        // Activity mini chart
+        const activityCtx = document.getElementById('activityChart').getContext('2d');
+        new Chart(activityCtx, {
+          type: 'line',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              data: [3, 5, 4, 8, 6, 2, 5],
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              fill: true,
+              tension: 0.4,
+              borderWidth: 2,
+              pointRadius: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
+          }
+        });
+
+        // Dashboard chart
+        const dashCtx = document.getElementById('dashboardChart').getContext('2d');
+        this.charts.dashboard = new Chart(dashCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'Tasks Completed',
+              data: [3, 5, 4, 8, 6, 2, 5],
+              backgroundColor: 'rgba(59, 130, 246, 0.6)',
+              borderColor: '#3b82f6',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, grid: { color: '#262626' } },
+              x: { grid: { display: false } }
+            }
+          }
+        });
+
+        // Insights chart
+        const insightsCtx = document.getElementById('insightsChart').getContext('2d');
+        this.charts.insights = new Chart(insightsCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Backlog', 'To Do', 'In Progress', 'Review', 'Done'],
+            datasets: [{
+              data: [3, 3, 2, 1, 3],
+              backgroundColor: ['#737373', '#3b82f6', '#eab308', '#a855f7', '#22c55e']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right' } }
+          }
+        });
+      },
+
+      // Logs filtering
+      filterLogs(type) {
+        document.querySelectorAll('.log-item').forEach(item => {
+          if (type === 'all' || item.dataset.type === type) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      },
+
+      searchLogs(query) {
+        const q = query.toLowerCase();
+        document.querySelectorAll('.log-item').forEach(item => {
+          const text = item.textContent.toLowerCase();
+          item.style.display = text.includes(q) ? '' : 'none';
+        });
+      },
+
+      // Utils
+      formatTime(timestamp) {
+        const diff = Date.now() - timestamp;
+        const mins = Math.floor(diff / 60000);
+        if (mins < 1) return 'just now';
+        if (mins < 60) return mins + 'm ago';
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return hours + 'h ago';
+        return Math.floor(hours / 24) + 'd ago';
+      },
+
+      getStatusName(status) {
+        const names = { backlog: 'Backlog', todo: 'To Do', progress: 'In Progress', review: 'Review', done: 'Done' };
+        return names[status] || status;
+      },
+
+      getGradient(color) {
+        const gradients = {
+          'primary-cyan': ['var(--primary)', 'var(--cyan)'],
+          'purple-pink': ['var(--purple)', 'var(--pink)'],
+          'orange-yellow': ['var(--orange)', 'var(--yellow)'],
+          'green-cyan': ['var(--green)', 'var(--cyan)']
+        };
+        return gradients[color] || gradients['primary-cyan'];
+      },
+
+      showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+
+        const icons = { success: '&#10003;', error: '&#10007;', info: 'i' };
+        const colors = { success: 'var(--green)', error: 'var(--red)', info: 'var(--primary)' };
+
+        toast.innerHTML = `
+          <span class="toast-icon" style="color: ${colors[type]};">${icons[type]}</span>
+          <span class="toast-message">${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+          toast.classList.add('removing');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+    };
+
+    // Initialize app
+    document.addEventListener('DOMContentLoaded', () => app.init());
+  </script>
+</body>
+</html>

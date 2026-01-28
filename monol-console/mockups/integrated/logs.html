@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monol Logs Dashboard - Mockup</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #22c55e;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --cyan: #06b6d4;
+            --purple: #a855f7;
+            --bg: #0a0a0a;
+            --card-bg: #171717;
+            --text: #fafafa;
+            --text-muted: #a3a3a3;
+            --border: #262626;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        h1 { font-size: 24px; font-weight: 700; }
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+        .search-box input {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            border-radius: 8px;
+            color: var(--text);
+            width: 300px;
+        }
+        .search-box button {
+            padding: 8px 16px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .card-title { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .card-value { font-size: 32px; font-weight: 700; }
+        .card-trend { font-size: 14px; margin-top: 8px; }
+        .trend-up { color: var(--success); }
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .chart-wrapper { position: relative; height: 300px; }
+        .session-list {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        .filter-tab {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .filter-tab.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+        .session-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            gap: 16px;
+            transition: background 0.2s;
+        }
+        .session-item:hover { background: rgba(255,255,255,0.02); }
+        .session-item:last-child { border-bottom: none; }
+        .session-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            width: 80px;
+            flex-shrink: 0;
+        }
+        .session-author {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .author-kent { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+        .author-alice { background: linear-gradient(135deg, #a855f7, #ec4899); }
+        .author-bob { background: linear-gradient(135deg, #22c55e, #14b8a6); }
+        .session-content { flex: 1; min-width: 0; }
+        .session-title { font-weight: 500; margin-bottom: 4px; }
+        .session-topic {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 12px;
+        }
+        .session-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .action-btn:hover { border-color: var(--primary); }
+        .action-btn.bookmarked { color: var(--warning); border-color: var(--warning); }
+        .timeline-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-top: 24px;
+        }
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        .timeline-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+        }
+        .timeline-hour {
+            width: 60px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .timeline-bar {
+            flex: 1;
+            height: 24px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+        }
+        .timeline-segment {
+            height: 100%;
+        }
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Monol Logs Dashboard</h1>
+            <div class="search-box">
+                <input type="text" placeholder="Search sessions...">
+                <button>Search</button>
+            </div>
+        </header>
+
+        <section class="summary-cards">
+            <div class="card">
+                <div class="card-title">📋 Total Sessions</div>
+                <div class="card-value">1,847</div>
+                <div class="card-trend trend-up">↑ 156 this week</div>
+            </div>
+            <div class="card">
+                <div class="card-title">📅 Today</div>
+                <div class="card-value">23</div>
+                <div class="card-trend trend-up">↑ 8 vs yesterday</div>
+            </div>
+            <div class="card">
+                <div class="card-title">⭐ Bookmarked</div>
+                <div class="card-value">42</div>
+                <div class="card-trend">Important sessions saved</div>
+            </div>
+            <div class="card">
+                <div class="card-title">👥 Authors</div>
+                <div class="card-value">5</div>
+                <div class="card-trend">Active contributors</div>
+            </div>
+        </section>
+
+        <section class="charts-row">
+            <div class="chart-container">
+                <h3 class="chart-title">📈 Session Activity (7 days)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">👥 Author Distribution</h3>
+                <div class="chart-wrapper">
+                    <canvas id="authorChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="session-list">
+            <div class="session-header">
+                <h3 class="chart-title">📋 Recent Sessions</h3>
+                <div class="filter-tabs">
+                    <button class="filter-tab active">All</button>
+                    <button class="filter-tab">Today</button>
+                    <button class="filter-tab">Bookmarked</button>
+                </div>
+            </div>
+            <div class="session-item">
+                <div class="session-time">14:32</div>
+                <div class="session-author author-kent">K</div>
+                <div class="session-content">
+                    <div class="session-title">GitHub 웹훅 자동 갱신 구현</div>
+                    <div class="session-topic">
+                        <span>🏷️ monol-server</span>
+                        <span>💬 45 messages</span>
+                        <span>⏱️ 2h 15m</span>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button class="action-btn bookmarked">⭐</button>
+                    <button class="action-btn">📤</button>
+                </div>
+            </div>
+            <div class="session-item">
+                <div class="session-time">11:20</div>
+                <div class="session-author author-kent">K</div>
+                <div class="session-content">
+                    <div class="session-title">통합 콘솔 컴포넌트 확충</div>
+                    <div class="session-topic">
+                        <span>🏷️ monol-console</span>
+                        <span>💬 128 messages</span>
+                        <span>⏱️ 4h 30m</span>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button class="action-btn bookmarked">⭐</button>
+                    <button class="action-btn">📤</button>
+                </div>
+            </div>
+            <div class="session-item">
+                <div class="session-time">09:15</div>
+                <div class="session-author author-alice">A</div>
+                <div class="session-content">
+                    <div class="session-title">Plugin Scout 추천 알고리즘 개선</div>
+                    <div class="session-topic">
+                        <span>🏷️ monol-plugin-scout</span>
+                        <span>💬 67 messages</span>
+                        <span>⏱️ 1h 45m</span>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button class="action-btn">☆</button>
+                    <button class="action-btn">📤</button>
+                </div>
+            </div>
+            <div class="session-item">
+                <div class="session-time">Yesterday</div>
+                <div class="session-author author-bob">B</div>
+                <div class="session-content">
+                    <div class="session-title">Channels 메시지 동기화 버그 수정</div>
+                    <div class="session-topic">
+                        <span>🏷️ monol-channels</span>
+                        <span>💬 34 messages</span>
+                        <span>⏱️ 55m</span>
+                    </div>
+                </div>
+                <div class="session-actions">
+                    <button class="action-btn">☆</button>
+                    <button class="action-btn">📤</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="timeline-panel">
+            <h3 class="chart-title">🕐 Today's Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-row">
+                    <div class="timeline-hour">09:00</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-segment" style="width: 30%; background: #a855f7;"></div>
+                    </div>
+                </div>
+                <div class="timeline-row">
+                    <div class="timeline-hour">10:00</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-segment" style="width: 45%; background: #a855f7;"></div>
+                        <div class="timeline-segment" style="width: 20%; background: #06b6d4;"></div>
+                    </div>
+                </div>
+                <div class="timeline-row">
+                    <div class="timeline-hour">11:00</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-segment" style="width: 80%; background: #06b6d4;"></div>
+                    </div>
+                </div>
+                <div class="timeline-row">
+                    <div class="timeline-hour">12:00</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-segment" style="width: 15%; background: #06b6d4;"></div>
+                    </div>
+                </div>
+                <div class="timeline-row">
+                    <div class="timeline-hour">13:00</div>
+                    <div class="timeline-bar"></div>
+                </div>
+                <div class="timeline-row">
+                    <div class="timeline-hour">14:00</div>
+                    <div class="timeline-bar">
+                        <div class="timeline-segment" style="width: 60%; background: #22c55e;"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--text-muted);">
+                <span><span style="display:inline-block;width:12px;height:12px;background:#a855f7;border-radius:2px;"></span> Alice</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#06b6d4;border-radius:2px;"></span> Kent</span>
+                <span><span style="display:inline-block;width:12px;height:12px;background:#22c55e;border-radius:2px;"></span> Bob</span>
+            </div>
+        </section>
+
+        <footer>
+            Generated: 2026-01-21 14:30:00 | Monol Logs v1.2.0
+        </footer>
+    </div>
+
+    <script>
+        const COLORS = {
+            primary: '#22c55e',
+            cyan: '#06b6d4',
+            purple: '#a855f7',
+            warning: '#f59e0b',
+            pink: '#ec4899'
+        };
+
+        // Activity Chart
+        new Chart(document.getElementById('activityChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Sessions',
+                    data: [18, 24, 21, 28, 32, 12, 23],
+                    backgroundColor: COLORS.primary + '80',
+                    borderColor: COLORS.primary,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Author Chart
+        new Chart(document.getElementById('authorChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Kent', 'Alice', 'Bob', 'Charlie', 'David'],
+                datasets: [{
+                    data: [45, 25, 15, 10, 5],
+                    backgroundColor: [
+                        COLORS.cyan,
+                        COLORS.purple,
+                        COLORS.primary,
+                        COLORS.warning,
+                        COLORS.pink
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+
+        // Filter tabs
+        document.querySelectorAll('.filter-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

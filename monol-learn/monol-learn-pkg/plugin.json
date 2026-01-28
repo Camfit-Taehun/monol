@@ -1,0 +1,9 @@
+{
+  "name": "monol-learn",
+  "version": "0.1.0",
+  "description": "Self-learning infrastructure for Claude Code agents",
+  "commands": "./commands",
+  "skills": "./skills",
+  "hooks": "./hooks/hooks.json",
+  "agents": "./agents"
+}

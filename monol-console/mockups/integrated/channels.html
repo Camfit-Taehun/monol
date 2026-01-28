@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monol Channels Dashboard - Mockup</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Monol Design System -->
+    <link rel="stylesheet" href="../../../monol-design/monol-design.min.css">
+    <style>
+        :root {
+            /* Monol Design System Colors */
+            --primary: var(--monol-primary, #f97316);
+            --success: var(--monol-success, #22c55e);
+            --warning: var(--monol-warning, #f59e0b);
+            --danger: var(--monol-error, #ef4444);
+            --info: var(--monol-info, #3b82f6);
+            --bg: var(--monol-bg-base, #0a0a0a);
+            --card-bg: var(--monol-bg-elevated, #171717);
+            --text: var(--monol-fg-base, #fafafa);
+            --text-muted: var(--monol-fg-muted, #a3a3a3);
+            --border: var(--monol-border-base, #262626);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        h1 { font-size: 24px; font-weight: 700; }
+        .period-selector { display: flex; gap: 8px; }
+        .period-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .period-btn:hover { border-color: var(--primary); }
+        .period-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .card-title { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .card-value { font-size: 32px; font-weight: 700; }
+        .card-trend { font-size: 14px; margin-top: 8px; }
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--danger); }
+        .charts-grid { display: grid; gap: 24px; margin-bottom: 32px; }
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .chart-wrapper { position: relative; height: 300px; }
+        .insights-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .insight-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .insight-item:last-child { border-bottom: none; }
+        .insight-icon {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .insight-icon.warning { background: #FEF3C7; }
+        .insight-icon.success { background: #D1FAE5; }
+        .insight-icon.info { background: #DBEAFE; }
+        .insight-content p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .charts-row { grid-template-columns: 1fr; }
+            .summary-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Monol Channels Dashboard</h1>
+            <div class="period-selector">
+                <button class="period-btn active">Today</button>
+                <button class="period-btn">Week</button>
+                <button class="period-btn">Month</button>
+            </div>
+        </header>
+
+        <section class="summary-cards">
+            <div class="card">
+                <div class="card-title">📬 Messages</div>
+                <div class="card-value">156</div>
+                <div class="card-trend trend-up">↑ 12% vs yesterday</div>
+            </div>
+            <div class="card">
+                <div class="card-title">💬 Discussions</div>
+                <div class="card-value">12</div>
+                <div class="card-trend trend-up">↑ 25% vs yesterday</div>
+            </div>
+            <div class="card">
+                <div class="card-title">🎯 Decisions</div>
+                <div class="card-value">8</div>
+                <div class="card-trend trend-down">↓ 5% vs yesterday</div>
+            </div>
+            <div class="card">
+                <div class="card-title">📢 Active Channels</div>
+                <div class="card-value">4</div>
+                <div class="card-trend" style="color: var(--text-muted)">— same as yesterday</div>
+            </div>
+        </section>
+
+        <section class="charts-grid">
+            <div class="chart-container">
+                <h3 class="chart-title">📈 Activity Trend (7 days)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <h3 class="chart-title">🤖 Agent Activity</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="agentChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">📬 Channel Distribution</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="channelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="insights-panel">
+            <h3 class="chart-title">💡 Recent Insights</h3>
+            <div class="insight-item">
+                <div class="insight-icon warning">⚠️</div>
+                <div class="insight-content">
+                    <strong>Security discussions increased 200%</strong>
+                    <p>Consider scheduling a dedicated security review session</p>
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-icon info">ℹ️</div>
+                <div class="insight-content">
+                    <strong>3 unresolved issues in #design</strong>
+                    <p>Messages waiting for response for more than 2 days</p>
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-icon success">✅</div>
+                <div class="insight-content">
+                    <strong>@backend agent most active</strong>
+                    <p>Participated in 45% of all discussions this week</p>
+                </div>
+            </div>
+            <div class="insight-item">
+                <div class="insight-icon info">💡</div>
+                <div class="insight-content">
+                    <strong>Peak activity: 14:00-16:00</strong>
+                    <p>Best time for collaborative discussions</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            Generated: 2026-01-19 15:30:00 | Monol Channels v1.1.0 | <a href="#" style="color: var(--primary);">Export as PNG</a>
+        </footer>
+    </div>
+
+    <script>
+        const COLORS = {
+            primary: '#4F46E5',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+            agents: {
+                backend: '#8B5CF6',
+                frontend: '#06B6D4',
+                security: '#F97316',
+                infra: '#84CC16',
+                qa: '#EC4899',
+                product: '#14B8A6',
+                data: '#6366F1'
+            }
+        };
+
+        // Trend Chart
+        new Chart(document.getElementById('trendChart'), {
+            type: 'line',
+            data: {
+                labels: ['01-13', '01-14', '01-15', '01-16', '01-17', '01-18', '01-19'],
+                datasets: [
+                    {
+                        label: 'Messages',
+                        data: [120, 145, 132, 165, 148, 172, 156],
+                        borderColor: COLORS.primary,
+                        backgroundColor: COLORS.primary + '20',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Discussions',
+                        data: [8, 12, 9, 15, 11, 14, 12],
+                        borderColor: COLORS.success,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Decisions',
+                        data: [5, 7, 6, 9, 8, 10, 8],
+                        borderColor: COLORS.warning,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Agent Chart
+        new Chart(document.getElementById('agentChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['backend', 'frontend', 'security', 'infra', 'qa', 'product'],
+                datasets: [{
+                    data: [45, 25, 15, 8, 4, 3],
+                    backgroundColor: [
+                        COLORS.agents.backend,
+                        COLORS.agents.frontend,
+                        COLORS.agents.security,
+                        COLORS.agents.infra,
+                        COLORS.agents.qa,
+                        COLORS.agents.product
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+
+        // Channel Chart
+        new Chart(document.getElementById('channelChart'), {
+            type: 'bar',
+            data: {
+                labels: ['#design', '#dev', '#ops', '#general', '#incidents'],
+                datasets: [{
+                    label: 'Messages',
+                    data: [45, 78, 33, 25, 12],
+                    backgroundColor: COLORS.primary + '80'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Period selector
+        document.querySelectorAll('.period-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

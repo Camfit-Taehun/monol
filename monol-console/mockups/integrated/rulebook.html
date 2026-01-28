@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rulebook Dashboard - Mockup</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #f97316;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            --cyan: #06b6d4;
+            --purple: #a855f7;
+            --bg: #0a0a0a;
+            --card-bg: #171717;
+            --text: #fafafa;
+            --text-muted: #a3a3a3;
+            --border: #262626;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        h1 { font-size: 24px; font-weight: 700; }
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            border-radius: 8px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .card-title { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .card-value { font-size: 32px; font-weight: 700; }
+        .card-trend { font-size: 14px; margin-top: 8px; }
+        .trend-up { color: var(--success); }
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .chart-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+        .chart-wrapper { position: relative; height: 300px; }
+        .rules-panel {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+        .rules-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .category-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        .category-tab {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: transparent;
+            border-radius: 6px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .category-tab.active {
+            background: var(--primary);
+            color: #000;
+            border-color: var(--primary);
+        }
+        .rule-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            gap: 16px;
+        }
+        .rule-item:last-child { border-bottom: none; }
+        .rule-severity {
+            width: 8px;
+            height: 40px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .severity-error { background: var(--danger); }
+        .severity-warning { background: var(--warning); }
+        .severity-info { background: var(--info); }
+        .rule-content { flex: 1; }
+        .rule-title { font-weight: 500; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .rule-id {
+            font-size: 11px;
+            padding: 2px 6px;
+            background: var(--border);
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+        .rule-desc { font-size: 13px; color: var(--text-muted); }
+        .rule-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            display: flex;
+            gap: 12px;
+        }
+        .rule-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .action-btn:hover { border-color: var(--primary); color: var(--text); }
+        .sync-status {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-top: 24px;
+        }
+        .sync-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .sync-item:last-child { border-bottom: none; }
+        .sync-platform {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sync-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .sync-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .badge-synced { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .badge-pending { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .badge-error { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📖 Rulebook Dashboard</h1>
+            <div class="header-actions">
+                <button class="btn">🔄 Sync All</button>
+                <button class="btn btn-primary">+ Add Rule</button>
+            </div>
+        </header>
+
+        <section class="summary-cards">
+            <div class="card">
+                <div class="card-title">📜 Total Rules</div>
+                <div class="card-value">47</div>
+                <div class="card-trend trend-up">↑ 5 this week</div>
+            </div>
+            <div class="card">
+                <div class="card-title">🔴 Error Rules</div>
+                <div class="card-value">12</div>
+                <div class="card-trend">Must follow</div>
+            </div>
+            <div class="card">
+                <div class="card-title">🟡 Warning Rules</div>
+                <div class="card-value">23</div>
+                <div class="card-trend">Recommended</div>
+            </div>
+            <div class="card">
+                <div class="card-title">🔵 Info Rules</div>
+                <div class="card-value">12</div>
+                <div class="card-trend">Guidelines</div>
+            </div>
+        </section>
+
+        <section class="charts-row">
+            <div class="chart-container">
+                <h3 class="chart-title">📊 Rules by Category</h3>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">📈 Rule Changes (30 days)</h3>
+                <div class="chart-wrapper">
+                    <canvas id="changesChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="rules-panel">
+            <div class="rules-header">
+                <h3 class="chart-title">📜 Active Rules</h3>
+                <div class="category-tabs">
+                    <button class="category-tab active">All</button>
+                    <button class="category-tab">Code</button>
+                    <button class="category-tab">Workflow</button>
+                    <button class="category-tab">Deploy</button>
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-severity severity-error"></div>
+                <div class="rule-content">
+                    <div class="rule-title">
+                        No console.log in production
+                        <span class="rule-id">code-001</span>
+                    </div>
+                    <div class="rule-desc">Production 코드에서 console.log 사용 금지. 디버깅 로그는 logger 유틸리티 사용 필수.</div>
+                    <div class="rule-meta">
+                        <span>📁 code/javascript.yaml</span>
+                        <span>🕐 Updated 2 days ago</span>
+                    </div>
+                </div>
+                <div class="rule-actions">
+                    <button class="action-btn">✏️</button>
+                    <button class="action-btn">📋</button>
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-severity severity-error"></div>
+                <div class="rule-content">
+                    <div class="rule-title">
+                        Required code review
+                        <span class="rule-id">workflow-001</span>
+                    </div>
+                    <div class="rule-desc">모든 PR은 최소 1명의 리뷰어 승인 필요. main 브랜치 직접 푸시 금지.</div>
+                    <div class="rule-meta">
+                        <span>📁 workflow/review.yaml</span>
+                        <span>🕐 Updated 1 week ago</span>
+                    </div>
+                </div>
+                <div class="rule-actions">
+                    <button class="action-btn">✏️</button>
+                    <button class="action-btn">📋</button>
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-severity severity-warning"></div>
+                <div class="rule-content">
+                    <div class="rule-title">
+                        Use TypeScript strict mode
+                        <span class="rule-id">code-002</span>
+                    </div>
+                    <div class="rule-desc">tsconfig.json에서 strict 모드 활성화 권장. any 타입 사용 최소화.</div>
+                    <div class="rule-meta">
+                        <span>📁 code/typescript.yaml</span>
+                        <span>🕐 Updated 3 days ago</span>
+                    </div>
+                </div>
+                <div class="rule-actions">
+                    <button class="action-btn">✏️</button>
+                    <button class="action-btn">📋</button>
+                </div>
+            </div>
+            <div class="rule-item">
+                <div class="rule-severity severity-info"></div>
+                <div class="rule-content">
+                    <div class="rule-title">
+                        Commit message format
+                        <span class="rule-id">workflow-002</span>
+                    </div>
+                    <div class="rule-desc">Conventional Commits 형식 사용: feat:, fix:, docs:, chore: 등</div>
+                    <div class="rule-meta">
+                        <span>📁 workflow/git.yaml</span>
+                        <span>🕐 Updated 2 weeks ago</span>
+                    </div>
+                </div>
+                <div class="rule-actions">
+                    <button class="action-btn">✏️</button>
+                    <button class="action-btn">📋</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="sync-status">
+            <h3 class="chart-title">🔄 Platform Sync Status</h3>
+            <div class="sync-item">
+                <div class="sync-platform">
+                    <div class="sync-icon" style="background: #6366f1;">🤖</div>
+                    <div>
+                        <div style="font-weight: 500;">Claude Code</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">CLAUDE.md + .claude/rules/</div>
+                    </div>
+                </div>
+                <span class="sync-badge badge-synced">✓ Synced</span>
+            </div>
+            <div class="sync-item">
+                <div class="sync-platform">
+                    <div class="sync-icon" style="background: #22c55e;">📝</div>
+                    <div>
+                        <div style="font-weight: 500;">Cursor</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">.cursorrules</div>
+                    </div>
+                </div>
+                <span class="sync-badge badge-synced">✓ Synced</span>
+            </div>
+            <div class="sync-item">
+                <div class="sync-platform">
+                    <div class="sync-icon" style="background: #f97316;">🧠</div>
+                    <div>
+                        <div style="font-weight: 500;">Windsurf</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">.windsurfrules</div>
+                    </div>
+                </div>
+                <span class="sync-badge badge-pending">⏳ Pending</span>
+            </div>
+            <div class="sync-item">
+                <div class="sync-platform">
+                    <div class="sync-icon" style="background: #ec4899;">⚡</div>
+                    <div>
+                        <div style="font-weight: 500;">GitHub Copilot</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">.github/copilot-instructions.md</div>
+                    </div>
+                </div>
+                <span class="sync-badge badge-synced">✓ Synced</span>
+            </div>
+        </section>
+
+        <footer>
+            Generated: 2026-01-21 14:30:00 | Rulebook v1.5.0
+        </footer>
+    </div>
+
+    <script>
+        const COLORS = {
+            primary: '#f97316',
+            success: '#22c55e',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            info: '#3b82f6',
+            purple: '#a855f7'
+        };
+
+        // Category Chart
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Code', 'Workflow', 'Deploy', 'Security', 'Docs'],
+                datasets: [{
+                    data: [18, 12, 8, 5, 4],
+                    backgroundColor: [
+                        COLORS.primary,
+                        COLORS.info,
+                        COLORS.success,
+                        COLORS.danger,
+                        COLORS.purple
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right' } }
+            }
+        });
+
+        // Changes Chart
+        new Chart(document.getElementById('changesChart'), {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [
+                    {
+                        label: 'Added',
+                        data: [3, 5, 2, 4],
+                        borderColor: COLORS.success,
+                        backgroundColor: COLORS.success + '20',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
+                        label: 'Modified',
+                        data: [2, 3, 4, 2],
+                        borderColor: COLORS.warning,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Removed',
+                        data: [1, 0, 1, 0],
+                        borderColor: COLORS.danger,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        // Category tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

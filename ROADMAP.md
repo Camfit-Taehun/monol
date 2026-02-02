@@ -1,6 +1,6 @@
 # Monol Family 통합 로드맵
 
-> 마지막 업데이트: 2026-01-28
+> 마지막 업데이트: 2026-02-02
 
 ---
 
@@ -11,9 +11,9 @@
 | **monol-x** | v0.9.0 | ✅ 안정 | 100% | 유지보수 |
 | **monol-channels** | v1.1.0 | ✅ 안정 | 100% | 유지보수 |
 | **monol-rulebook** | v0.2.x | ✅ 안정 | 85% | v0.3.x 규칙 공유/배포 |
-| **monol-plugin-scout** | v2.0.0 | ✅ 안정 | 80% | v2.1 UX 개선 |
+| **monol-plugin-scout** | v2.1.0 | ✅ 안정 | 90% | v2.2 학습 시스템 개선 |
 | **monol-datastore** | v0.2.0 | ✅ 안정 | 90% | 플러그인 통합 |
-| **monol-workbase** | v0.3.0 | ✅ 안정 | 65% | v0.4.0 스프린트 관리 |
+| **monol-workbase** | v0.4.5 | ✅ 안정 | 80% | v0.5.0 자동화 |
 | **monol-design** | v1.5.0 | ✅ 완료 | 100% | v2.0.0 React/Vue 라이브러리 |
 
 ---
@@ -39,9 +39,9 @@
 
 | 프로젝트 | 작업 | 예상 복잡도 |
 |----------|------|-------------|
-| monol-workbase | v0.4.0 스프린트 관리 | 높 |
-| monol-workbase | v0.4.5 의미론적 관계 | 높 |
-| monol-plugin-scout | v2.1 무음/빈도 조절 | 중 |
+| ~~monol-workbase~~ | ~~v0.4.0 스프린트 관리~~ | ✅ 완료 |
+| ~~monol-workbase~~ | ~~v0.4.5 의미론적 관계~~ | ✅ 완료 |
+| ~~monol-plugin-scout~~ | ~~v2.1 무음/빈도 조절~~ | ✅ 완료 |
 
 ### P3 - 장기 (분기 내)
 
@@ -118,19 +118,25 @@ Sharing         ░░░░░░░░░░░░░░░░░░░░ 0%
 
 ### monol-plugin-scout (플러그인 추천)
 
-**현재**: v2.0.0 - 플러그인 스캔, 추천, 설치 완료
+**현재**: v2.1.0 - 무음 모드 및 빈도 조절 완료
 
 ```
 Discovery       ████████████████████ 100%
 Recommendation  ████████████████████ 100%
-UX              ████████████░░░░░░░░ 60%
+UX              ████████████████████ 100%
 Learning        ████████░░░░░░░░░░░░ 40%
 ```
 
-**다음 (v2.1)**:
-- [ ] `/scout quiet` 무음 모드
-- [ ] 추천 빈도 조절
-- [ ] 스마트 타이밍 (커밋 후 추천)
+**v2.1 완료 (2026-02-02)**:
+- [x] `/scout quiet` 무음 모드 - 추천 알림 완전 비활성화
+- [x] `/scout frequency` 추천 빈도 조절 - 세션/일일 제한
+- [x] `/scout timing` 스마트 타이밍 - 커밋/PR 후 추천
+- [x] recommendation-controller.sh - 추천 제어 통합 로직
+- [x] on-stop.md Hook 통합 - 자동 추천 시 제한 적용
+
+**다음 (v2.2)**:
+- [ ] 학습 시스템 개선 - 거절 패턴 학습 강화
+- [ ] 개인화 추천 - 사용자 선호도 기반
 
 ---
 
@@ -160,14 +166,14 @@ Plugin Integ    ░░░░░░░░░░░░░░░░░░░░ 0%
 
 ### monol-workbase (프로젝트 관리)
 
-**현재**: v0.3.0 - 분석 & ASCII 차트 완료
+**현재**: v0.4.5 - 스프린트 관리 & 의미론적 관계 완료
 
 ```
 Core CRUD       ████████████████████ 100%
 Search          ████████████████████ 100%
 Analytics       ████████████████████ 100%
-Sprint          ░░░░░░░░░░░░░░░░░░░░ 0%
-Relations       ░░░░░░░░░░░░░░░░░░░░ 0%
+Sprint          ████████████████████ 100%
+Relations       ████████████████████ 100%
 Automation      ░░░░░░░░░░░░░░░░░░░░ 0%
 Reporting       ░░░░░░░░░░░░░░░░░░░░ 0%
 ```
@@ -184,11 +190,27 @@ Reporting       ░░░░░░░░░░░░░░░░░░░░ 0%
 - [x] renderProgressBar() - 진행률 바
 - [x] renderSparkline() - 스파크라인 차트
 
+**v0.4.0 완료 (2026-02-02)**:
+- [x] Sprint 엔티티 및 스키마 (Sprint 테이블)
+- [x] createSprint(), updateSprint(), deleteSprint()
+- [x] startSprint(), completeSprint()
+- [x] addTaskToSprint(), removeTaskFromSprint()
+- [x] getSprintStats(), getSprintDetailStats()
+- [x] getCurrentSprint(), listSprints()
+
+**v0.4.5 완료 (2026-02-02)**:
+- [x] TaskRelation 엔티티 및 스키마 (blocks, depends_on, relates_to)
+- [x] createTaskRelation(), deleteTaskRelation()
+- [x] getTaskRelations(), getIncomingRelations()
+- [x] detectCycle() - 순환 참조 감지 (DFS)
+- [x] buildDependencyGraph() - 의존성 그래프 생성
+- [x] getDependencyStatus() - 태스크 시작 가능 여부
+- [x] getReadyTasks() - 시작 가능한 태스크 조회
+- [x] getUnblockedTasks() - 차단 해제될 태스크 조회
+
 **다음**:
-- v0.4.0: 스프린트 관리
-- v0.4.5: 의미론적 관계 (blocks, depends_on)
-- v0.5.0: 자동화
-- v0.6.0: 리포팅
+- v0.5.0: 자동화 (상태 자동 변경, 체크리스트)
+- v0.6.0: 리포팅 (프로젝트/스프린트/주간 리포트)
 - v1.0.0: 안정화
 
 ---

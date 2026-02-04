@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(npx playwright install chromium)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(curl:*)",
+      "Bash(xargs:*)",
+      "WebFetch(domain:plannotator.ai)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(bash)",
+      "Bash(plannotator --help:*)",
+      "Bash(grep:*)",
+      "Bash(__NEW_LINE_d6470263d323bc25__ echo \"\")",
+      "Bash(__NEW_LINE_491ebb4bafaf0112__ echo \"\")",
+      "Bash(__NEW_LINE_8e132f3b992ac5af__ echo \"\")",
+      "Bash(__NEW_LINE_aa97c5053858ea60__ echo \"\")",
+      "Bash(__NEW_LINE_58be2fa5317ddf34__ echo \"\")",
+      "Bash(npx tsx:*)",
+      "Bash(git -C /Users/kent/Work/monol/monol-planote status)",
+      "Bash(git -C /Users/kent/Work/monol rev-parse:*)"
+    ]
+  }
+}
